@@ -146,7 +146,22 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                         isCompleted: completed,
                         isHealth: true,
                         notes: h.notes.isNotEmpty ? h.notes : null,
+                        description: h.description.isNotEmpty ? h.description : null,
+                        defaultValue: h.defaultValue.isNotEmpty ? h.defaultValue : null,
+                        category: h.category,
                         onToggle: () => overview.toggleHealthCompletion(h.id!),
+                        onTapDetail: () => _showDetailSheet(
+                          context,
+                          name: h.name,
+                          icon: h.icon,
+                          isHealth: true,
+                          description: h.description,
+                          defaultValue: h.defaultValue,
+                          notes: h.notes,
+                          category: h.category,
+                          reminderTime: h.reminderEnabled ? h.reminderTime : null,
+                          isCompleted: completed,
+                        ),
                       );
                     }),
                   if (_showFiltered(overview, 'schedule'))
@@ -165,7 +180,21 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                         isCompleted: completed,
                         isHealth: false,
                         notes: s.notes.isNotEmpty ? s.notes : null,
+                        description: s.description.isNotEmpty ? s.description : null,
+                        category: s.category,
                         onToggle: () => overview.toggleScheduleCompletion(s.id!),
+                        onTapDetail: () => _showDetailSheet(
+                          context,
+                          name: s.name,
+                          icon: s.icon,
+                          isHealth: false,
+                          description: s.description,
+                          notes: s.notes,
+                          category: s.category,
+                          scheduleDate: s.scheduleDate,
+                          reminderTime: s.reminderEnabled ? s.reminderTime : null,
+                          isCompleted: completed,
+                        ),
                       );
                     }),
                   if (overview.totalTasks == 0)
@@ -285,6 +314,173 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
         ],
       ),
     );
+  }
+
+  void _showDetailSheet(
+    BuildContext context, {
+    required String name,
+    required String icon,
+    required bool isHealth,
+    String? description,
+    String? defaultValue,
+    String? notes,
+    String? category,
+    String? scheduleDate,
+    String? reminderTime,
+    required bool isCompleted,
+  }) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: (isHealth ? AppTheme.healthColor : AppTheme.scheduleColor).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    _detailIcon(icon),
+                    color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      if (category != null && category != 'custom')
+                        Text(
+                          category == 'preset' ? '系统推荐' : category,
+                          style: TextStyle(
+                            color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCompleted ? AppTheme.completedColor : Colors.transparent,
+                    border: isCompleted
+                        ? null
+                        : Border.all(color: Colors.grey[400]!, width: 2),
+                  ),
+                  child: isCompleted
+                      ? const Icon(Icons.check, color: Colors.white, size: 22)
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (description != null && description.isNotEmpty) ...[
+              _buildDetailRow(context, Icons.info_outline, '描述', description),
+              const SizedBox(height: 12),
+            ],
+            if (defaultValue != null && defaultValue.isNotEmpty) ...[
+              _buildDetailRow(context, Icons.trending_up, '建议值', defaultValue),
+              const SizedBox(height: 12),
+            ],
+            if (notes != null && notes.isNotEmpty) ...[
+              _buildDetailRow(context, Icons.note, '备注', notes),
+              const SizedBox(height: 12),
+            ],
+            if (scheduleDate != null && scheduleDate.isNotEmpty) ...[
+              _buildDetailRow(context, Icons.calendar_today, '日程日期', formatDate(scheduleDate)),
+              const SizedBox(height: 12),
+            ],
+            if (reminderTime != null) ...[
+              _buildDetailRow(context, Icons.notifications_active, '提醒时间', '每天 $reminderTime'),
+              const SizedBox(height: 12),
+            ],
+            _buildDetailRow(
+              context,
+              isCompleted ? Icons.check_circle : Icons.circle_outlined,
+              '完成状态',
+              isCompleted ? '✅ 已完成' : '⏳ 未完成',
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Colors.grey[500]),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 60,
+          child: Text(
+            label,
+            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _detailIcon(String iconName) {
+    switch (iconName) {
+      case 'water_drop': return Icons.water_drop;
+      case 'directions_run': return Icons.directions_run;
+      case 'visibility': return Icons.visibility;
+      case 'self_improvement': return Icons.self_improvement;
+      case 'bedtime': return Icons.bedtime;
+      case 'eco': return Icons.eco;
+      case 'directions_walk': return Icons.directions_walk;
+      case 'menu_book': return Icons.menu_book;
+      case 'spellcheck': return Icons.spellcheck;
+      case 'edit_note': return Icons.edit_note;
+      case 'assignment': return Icons.assignment;
+      case 'replay': return Icons.replay;
+      case 'code': return Icons.code;
+      case 'biotech': return Icons.biotech;
+      case 'lightbulb': return Icons.lightbulb;
+      default: return Icons.favorite;
+    }
   }
 
   Widget _buildEmptyState(ThemeData theme) {

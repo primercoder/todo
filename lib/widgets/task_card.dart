@@ -7,8 +7,12 @@ class TaskCard extends StatelessWidget {
   final String icon;
   final bool isCompleted;
   final VoidCallback onToggle;
+  final VoidCallback onTapDetail;
   final bool isHealth;
   final String? notes;
+  final String? description;
+  final String? defaultValue;
+  final String? category;
 
   const TaskCard({
     super.key,
@@ -17,8 +21,12 @@ class TaskCard extends StatelessWidget {
     required this.icon,
     required this.isCompleted,
     required this.onToggle,
+    required this.onTapDetail,
     this.isHealth = true,
     this.notes,
+    this.description,
+    this.defaultValue,
+    this.category,
   });
 
   IconData _getIcon() {
@@ -55,7 +63,7 @@ class TaskCard extends StatelessWidget {
             ? AppTheme.completedColor.withValues(alpha: 0.15)
             : null,
         child: InkWell(
-          onTap: onToggle,
+          onTap: onTapDetail,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -97,6 +105,8 @@ class TaskCard extends StatelessWidget {
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                       if (notes != null && notes!.isNotEmpty) ...[
@@ -114,22 +124,33 @@ class TaskCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onToggle,
+                  behavior: HitTestBehavior.opaque,
                   child: Container(
-                    key: ValueKey(isCompleted),
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isCompleted
-                          ? AppTheme.completedColor
-                          : Colors.grey[300],
-                    ),
-                    child: Icon(
-                      isCompleted ? Icons.check : Icons.circle_outlined,
-                      color: Colors.white,
-                      size: 18,
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        key: ValueKey(isCompleted),
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isCompleted
+                              ? AppTheme.completedColor
+                              : Colors.transparent,
+                          border: isCompleted
+                              ? null
+                              : Border.all(color: Colors.grey[400]!, width: 2),
+                        ),
+                        child: isCompleted
+                            ? const Icon(Icons.check, color: Colors.white, size: 20)
+                            : null,
+                      ),
                     ),
                   ),
                 ),
