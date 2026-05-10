@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../providers/health_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/health_item.dart';
-import '../utils/constants.dart';
 import '../utils/theme.dart';
+import '../utils/app_l10n.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -257,6 +257,7 @@ class _PresetPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppL10n.of(context);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -265,38 +266,26 @@ class _PresetPickerSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
+            child: Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
             ),
           ),
           const SizedBox(height: 16),
-          Text('📋 参考健康项目', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(l10n.presetHealthTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('点击添加推荐的健康习惯', style: TextStyle(color: Colors.grey[500])),
+          Text(l10n.presetHealthDesc, style: TextStyle(color: Colors.grey[500])),
           const SizedBox(height: 16),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: presetHealthItems.length,
+              itemCount: l10n.presetHealthItems.length,
               itemBuilder: (context, index) {
-                final item = presetHealthItems[index];
+                final item = l10n.presetHealthItems[index];
                 return ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.healthColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      _getPresetIcon(item['icon']!),
-                      color: AppTheme.healthColor,
-                      size: 22,
-                    ),
+                    decoration: BoxDecoration(color: AppTheme.healthColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                    child: Icon(_getPresetIcon(item['icon']!), color: AppTheme.healthColor, size: 22),
                   ),
                   title: Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(item['description']!, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -304,23 +293,26 @@ class _PresetPickerSheet extends StatelessWidget {
                     icon: Icon(Icons.add_circle_outline, color: AppTheme.healthColor),
                     onPressed: () async {
                       final provider = context.read<HealthProvider>();
+                      final name = item['name']!;
+                      if (provider.hasDuplicateName(name)) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(l10n.duplicateHealth(name)),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                        return;
+                      }
                       final newItem = HealthItem(
-                        name: item['name']!,
-                        icon: item['icon']!,
-                        category: 'preset',
-                        description: item['description']!,
-                        defaultValue: item['defaultValue'] ?? '',
-                        isActive: true,
-                        sortOrder: provider.activeItems.length,
+                        name: name, icon: item['icon']!, category: 'preset',
+                        description: item['description']!, defaultValue: item['defaultValue'] ?? '',
+                        isActive: true, sortOrder: provider.activeItems.length,
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('「${item['name']}」已添加到健康计划'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(l10n.addedToHealth(name)), behavior: SnackBarBehavior.floating,
+                      ));
                     },
                   ),
                 );
@@ -412,9 +404,20 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
   }
 
   Future<void> _save() async {
-    if (_nameCtrl.text.trim().isEmpty) {
+    final l10n = AppL10n.of(context);
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('名称不能为空哦~'), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating),
+      );
+      return;
+    }
+
+    final provider = context.read<HealthProvider>();
+
+    if (!isEditing && provider.hasDuplicateName(name)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.duplicateHealth(name)), behavior: SnackBarBehavior.floating),
       );
       return;
     }
@@ -423,7 +426,7 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
 
     final item = HealthItem(
       id: widget.item?.id,
-      name: _nameCtrl.text.trim(),
+      name: name,
       icon: widget.item?.icon ?? 'favorite',
       category: widget.item?.category ?? 'custom',
       description: widget.item?.description ?? '',
@@ -436,7 +439,6 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
       createdAt: widget.item?.createdAt,
     );
 
-    final provider = context.read<HealthProvider>();
     if (isEditing) {
       await provider.updateItem(item);
     } else {

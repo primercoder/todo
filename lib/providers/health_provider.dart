@@ -23,15 +23,18 @@ class HealthProvider extends ChangeNotifier {
   Future<void> loadItems() async {
     _isLoading = true;
     notifyListeners();
-
     _allItems = await _db.getAllHealthItems();
     _activeItems = await _db.getActiveHealthItems();
-
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> addItem(HealthItem item) async {
+  bool hasDuplicateName(String name, {int? excludeId}) {
+    return _activeItems.any((i) => i.name == name && i.id != excludeId);
+  }
+
+  Future<bool> addItem(HealthItem item) async {
+    if (hasDuplicateName(item.name)) return false;
     final id = await _db.insertHealthItem(item);
     final newItem = item.copyWith(id: id);
     _allItems.add(newItem);
@@ -40,6 +43,7 @@ class HealthProvider extends ChangeNotifier {
       _scheduleReminder(newItem);
     }
     notifyListeners();
+    return true;
   }
 
   Future<void> updateItem(HealthItem item) async {
@@ -51,11 +55,9 @@ class HealthProvider extends ChangeNotifier {
   Future<void> toggleActive(int id) async {
     final index = _allItems.indexWhere((i) => i.id == id);
     if (index == -1) return;
-
     final item = _allItems[index];
     final updated = item.copyWith(isActive: !item.isActive);
     await _db.updateHealthItem(updated);
-
     if (updated.isActive) {
       _activeItems.add(updated);
       _scheduleReminder(updated);
@@ -96,16 +98,17 @@ class HealthProvider extends ChangeNotifier {
         final title = isZh ? '💪 健康提醒' : '💪 Health Reminder';
         final body = _buildHealthReminderBody(item.name, item.defaultValue, isZh);
         _notificationService.scheduleTaskReminder(
-          id: item.id! + 10000,
-          title: title,
-          body: body,
-          hour: hour,
-          minute: minute,
+          id: item.id! + 10000, title: title, body: body,
+          hour: hour, minute: minute,
         );
       }
     } else if (item.id != null) {
       _notificationService.cancelTaskReminder(item.id! + 10000);
     }
+  }
+
+  Future<void> rescheduleReminder(HealthItem item) async {
+    _scheduleReminder(item);
   }
 
   String _buildHealthReminderBody(String name, String defaultValue, bool isZh) {

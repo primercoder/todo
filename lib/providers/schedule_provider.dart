@@ -23,12 +23,10 @@ class ScheduleProvider extends ChangeNotifier {
   Future<void> loadItems() async {
     _isLoading = true;
     notifyListeners();
-
     _allItems = await _db.getAllScheduleItems();
     final today = DateTime.now();
     final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     _todayItems = await _db.getScheduleItemsForDate(dateStr);
-
     _isLoading = false;
     notifyListeners();
   }
@@ -37,7 +35,13 @@ class ScheduleProvider extends ChangeNotifier {
     return await _db.getScheduleItemsForDate(date);
   }
 
-  Future<void> addItem(ScheduleItem item) async {
+  bool hasDuplicate(String name, String date, {int? excludeId}) {
+    return _allItems.any((i) =>
+        i.name == name && i.scheduleDate == date && i.id != excludeId);
+  }
+
+  Future<bool> addItem(ScheduleItem item) async {
+    if (hasDuplicate(item.name, item.scheduleDate)) return false;
     final id = await _db.insertScheduleItem(item);
     final newItem = item.copyWith(id: id);
     _allItems.insert(0, newItem);
@@ -48,6 +52,7 @@ class ScheduleProvider extends ChangeNotifier {
     }
     _scheduleReminder(newItem);
     notifyListeners();
+    return true;
   }
 
   Future<void> updateItem(ScheduleItem item) async {
@@ -59,11 +64,9 @@ class ScheduleProvider extends ChangeNotifier {
   Future<void> toggleActive(int id) async {
     final index = _allItems.indexWhere((i) => i.id == id);
     if (index == -1) return;
-
     final item = _allItems[index];
     final updated = item.copyWith(isActive: !item.isActive);
     await _db.updateScheduleItem(updated);
-
     if (!updated.isActive) {
       _allItems.removeAt(index);
       _todayItems.removeWhere((i) => i.id == id);
@@ -98,16 +101,17 @@ class ScheduleProvider extends ChangeNotifier {
         final title = isZh ? '📅 日程提醒' : '📅 Schedule Reminder';
         final body = _buildScheduleReminderBody(item.name, item.description, isZh);
         _notificationService.scheduleTaskReminder(
-          id: item.id! + 20000,
-          title: title,
-          body: body,
-          hour: hour,
-          minute: minute,
+          id: item.id! + 20000, title: title, body: body,
+          hour: hour, minute: minute,
         );
       }
     } else if (item.id != null) {
       _notificationService.cancelTaskReminder(item.id! + 20000);
     }
+  }
+
+  Future<void> rescheduleReminder(ScheduleItem item) async {
+    _scheduleReminder(item);
   }
 
   String _buildScheduleReminderBody(String name, String description, bool isZh) {

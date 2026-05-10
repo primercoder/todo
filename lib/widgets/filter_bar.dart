@@ -5,6 +5,13 @@ class FilterBar extends StatelessWidget {
   final String completionFilter;
   final ValueChanged<String> onCategoryChanged;
   final ValueChanged<String> onCompletionChanged;
+  final String categoryLabel;
+  final String completionLabel;
+  final String allLabel;
+  final String healthLabel;
+  final String scheduleLabel;
+  final String completedLabel;
+  final String incompleteLabel;
 
   const FilterBar({
     super.key,
@@ -12,6 +19,13 @@ class FilterBar extends StatelessWidget {
     required this.completionFilter,
     required this.onCategoryChanged,
     required this.onCompletionChanged,
+    required this.categoryLabel,
+    required this.completionLabel,
+    required this.allLabel,
+    required this.healthLabel,
+    required this.scheduleLabel,
+    required this.completedLabel,
+    required this.incompleteLabel,
   });
 
   @override
@@ -25,27 +39,27 @@ class FilterBar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('类别', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+            Text(categoryLabel, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
             const SizedBox(height: 6),
             Row(
               children: [
-                _buildChip(context, '全部', 'all', categoryFilter, onCategoryChanged),
+                _buildChip(context, allLabel, 'all', categoryFilter, onCategoryChanged),
                 const SizedBox(width: 8),
-                _buildChip(context, '健康', 'health', categoryFilter, onCategoryChanged),
+                _buildChip(context, healthLabel, 'health', categoryFilter, onCategoryChanged),
                 const SizedBox(width: 8),
-                _buildChip(context, '日程', 'schedule', categoryFilter, onCategoryChanged),
+                _buildChip(context, scheduleLabel, 'schedule', categoryFilter, onCategoryChanged),
               ],
             ),
             const SizedBox(height: 10),
-            Text('完成度', style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+            Text(completionLabel, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
             const SizedBox(height: 6),
             Row(
               children: [
-                _buildChip(context, '全部', 'all', completionFilter, onCompletionChanged),
+                _buildChip(context, allLabel, 'all', completionFilter, onCompletionChanged),
                 const SizedBox(width: 8),
-                _buildChip(context, '已完成', 'completed', completionFilter, onCompletionChanged),
+                _buildChip(context, completedLabel, 'completed', completionFilter, onCompletionChanged),
                 const SizedBox(width: 8),
-                _buildChip(context, '未完成', 'incomplete', completionFilter, onCompletionChanged),
+                _buildChip(context, incompleteLabel, 'incomplete', completionFilter, onCompletionChanged),
               ],
             ),
           ],

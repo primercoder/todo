@@ -95,6 +95,12 @@ lib/
 - 主题定义在 `lib/utils/theme.dart`
 - 通知系统使用 `flutter_local_notifications` 的 zonedSchedule 实现定时推送
 
+## 图标
+
+App 图标使用 [历钟图标 by paomedia (Arnaud)](
+https://icon-icons.com/zh/authors/143-paomedia-arnaud) on 
+[Icon-Icons.com](https://icon-icons.com/zh/)
+
 ## License
 
 MIT

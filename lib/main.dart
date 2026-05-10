@@ -58,7 +58,7 @@ class TodoApp extends StatelessWidget {
             navigatorKey: navigatorKey,
             locale: settings.locale,
             supportedLocales: const [Locale('zh'), Locale('en')],
-            localizationsDelegates: const [
+            localizationsDelegates: [
               AppLocalizationDelegate(),
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,

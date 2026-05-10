@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/overview_provider.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
+import '../utils/app_l10n.dart';
 import '../widgets/task_card.dart';
 import '../widgets/filter_bar.dart';
 import '../database/database_helper.dart';
@@ -43,6 +44,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
 
   Future<void> _selectDate() async {
     final provider = context.read<OverviewProvider>();
+    final l10n = AppL10n.of(context);
     final currentDate = DateTime.tryParse(provider.currentDate) ?? DateTime.now();
 
     final picked = await showDatePicker(
@@ -50,9 +52,9 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
       initialDate: currentDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      helpText: '选择查看日期',
-      cancelText: '取消',
-      confirmText: '确认',
+      helpText: l10n.selectDate,
+      cancelText: l10n.cancelLabel,
+      confirmText: l10n.confirmLabel,
     );
 
     if (picked != null) {
@@ -63,6 +65,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -83,7 +86,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                       date.month == today.month &&
                       date.day == today.day;
 
-                  return Text(isToday ? '今日概览' : formatDate(provider.currentDate));
+                  return Text(isToday ? l10n.todayOverview : formatDate(provider.currentDate));
                 },
               ),
               const SizedBox(width: 4),
@@ -97,14 +100,14 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             onPressed: () {
               setState(() => _showFilters = !_showFilters);
             },
-            tooltip: '筛选',
+            tooltip: l10n.filter,
           ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
               setState(() => _showHistory = !_showHistory);
             },
-            tooltip: '历史记录',
+            tooltip: l10n.historyLabel,
           ),
         ],
       ),
@@ -120,20 +123,27 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
               onRefresh: () => overview.loadData(),
               child: ListView(
                 children: [
-                  _buildProgressBar(overview, theme),
+                  _buildProgressBar(overview, theme, l10n),
                   if (_showFilters)
                     FilterBar(
                       categoryFilter: overview.categoryFilter,
                       completionFilter: overview.completionFilter,
                       onCategoryChanged: overview.setCategoryFilter,
                       onCompletionChanged: overview.setCompletionFilter,
+                      categoryLabel: l10n.category,
+                      completionLabel: l10n.completion,
+                      allLabel: l10n.all,
+                      healthLabel: l10n.health,
+                      scheduleLabel: l10n.schedule,
+                      completedLabel: l10n.completed,
+                      incompleteLabel: l10n.incomplete,
                     ),
                   if (_showHistory)
-                    _buildHistorySection(theme),
+                    _buildHistorySection(theme, l10n),
                   if (_showFiltered(overview, 'health'))
                     _buildSectionHeader(
                       icon: Icons.favorite,
-                      title: '健康计划',
+                      title: l10n.healthPlan,
                       color: AppTheme.healthColor,
                     ),
                   if (_showFiltered(overview, 'health'))
@@ -167,7 +177,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                   if (_showFiltered(overview, 'schedule'))
                     _buildSectionHeader(
                       icon: Icons.event,
-                      title: '日程安排',
+                      title: l10n.schedulePlan,
                       color: AppTheme.scheduleColor,
                     ),
                   if (_showFiltered(overview, 'schedule'))
@@ -198,7 +208,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                       );
                     }),
                   if (overview.totalTasks == 0)
-                    _buildEmptyState(theme),
+                    _buildEmptyState(theme, l10n),
                   const SizedBox(height: 80),
                 ],
               ),
@@ -214,7 +224,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     return overview.categoryFilter == type;
   }
 
-  Widget _buildProgressBar(OverviewProvider overview, ThemeData theme) {
+  Widget _buildProgressBar(OverviewProvider overview, ThemeData theme, AppL10n l10n) {
     final rate = overview.completionRate;
 
     return Container(
@@ -244,7 +254,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '完成进度',
+                l10n.completionProgress,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -330,6 +340,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     required bool isCompleted,
   }) {
     final theme = Theme.of(context);
+    final l10n = AppL10n.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -344,13 +355,8 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+              child: Container(width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 20),
@@ -362,75 +368,59 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                     color: (isHealth ? AppTheme.healthColor : AppTheme.scheduleColor).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    _detailIcon(icon),
-                    color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor,
-                    size: 28,
-                  ),
+                  child: Icon(_detailIcon(icon), color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor, size: 28),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        name,
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
+                      Text(name, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       if (category != null && category != 'custom')
                         Text(
-                          category == 'preset' ? '系统推荐' : category,
-                          style: TextStyle(
-                            color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          category == 'preset' ? l10n.presetLabel : category,
+                          style: TextStyle(color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor, fontSize: 13, fontWeight: FontWeight.w500),
                         ),
                     ],
                   ),
                 ),
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 32, height: 32,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isCompleted ? AppTheme.completedColor : Colors.transparent,
-                    border: isCompleted
-                        ? null
-                        : Border.all(color: Colors.grey[400]!, width: 2),
+                    border: isCompleted ? null : Border.all(color: Colors.grey[400]!, width: 2),
                   ),
-                  child: isCompleted
-                      ? const Icon(Icons.check, color: Colors.white, size: 22)
-                      : null,
+                  child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 22) : null,
                 ),
               ],
             ),
             const SizedBox(height: 20),
             if (description != null && description.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.info_outline, '描述', description),
+              _buildDetailRow(context, Icons.info_outline, l10n.descriptionLabel, description),
               const SizedBox(height: 12),
             ],
             if (defaultValue != null && defaultValue.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.trending_up, '建议值', defaultValue),
+              _buildDetailRow(context, Icons.trending_up, l10n.suggestedValueLabel, defaultValue),
               const SizedBox(height: 12),
             ],
             if (notes != null && notes.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.note, '备注', notes),
+              _buildDetailRow(context, Icons.note, l10n.notesLabel, notes),
               const SizedBox(height: 12),
             ],
             if (scheduleDate != null && scheduleDate.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.calendar_today, '日程日期', formatDate(scheduleDate)),
+              _buildDetailRow(context, Icons.calendar_today, l10n.scheduleDateLabel, formatDate(scheduleDate)),
               const SizedBox(height: 12),
             ],
             if (reminderTime != null) ...[
-              _buildDetailRow(context, Icons.notifications_active, '提醒时间', '每天 $reminderTime'),
+              _buildDetailRow(context, Icons.notifications_active, l10n.reminderTimeLabel, '每天 $reminderTime'),
               const SizedBox(height: 12),
             ],
             _buildDetailRow(
               context,
               isCompleted ? Icons.check_circle : Icons.circle_outlined,
-              '完成状态',
-              isCompleted ? '✅ 已完成' : '⏳ 未完成',
+              l10n.statusLabel,
+              isCompleted ? l10n.completedStatus : l10n.incompleteStatus,
             ),
             const SizedBox(height: 16),
           ],
@@ -483,7 +473,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     }
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, AppL10n l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -491,22 +481,16 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
           children: [
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
-            Text(
-              '今天还没有待办事项哦',
-              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey[400]),
-            ),
+            Text(l10n.noTasks, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey[400])),
             const SizedBox(height: 8),
-            Text(
-              '去「健康」或「日程」页添加吧~',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
-            ),
+            Text(l10n.addFromTabs, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[400])),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHistorySection(ThemeData theme) {
+  Widget _buildHistorySection(ThemeData theme, AppL10n l10n) {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: DatabaseHelper().getAllHistorySummaries(),
       builder: (context, snapshot) {
@@ -516,7 +500,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Center(
-                child: Text('暂无历史记录', style: TextStyle(color: Colors.grey[400])),
+                child: Text(l10n.noHistory, style: TextStyle(color: Colors.grey[400])),
               ),
             ),
           );
@@ -531,7 +515,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('📊 最近一周', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text(l10n.recentWeek, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 ...summaries.map((s) {
                   final date = s['date'] as String;

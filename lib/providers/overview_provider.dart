@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../models/health_item.dart';
 import '../models/schedule_item.dart';
 import '../database/database_helper.dart';
+import '../services/notification_service.dart';
 import '../utils/constants.dart';
 
 class OverviewProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper();
+  final NotificationService _notificationService = NotificationService();
   List<HealthItem> _healthItems = [];
   List<ScheduleItem> _scheduleItems = [];
   Map<int, bool> _healthCompletion = {};
@@ -80,13 +82,10 @@ class OverviewProvider extends ChangeNotifier {
     final targetDate = date ?? _currentDate;
     _isLoading = true;
     notifyListeners();
-
     _healthItems = await _db.getActiveHealthItems();
     _scheduleItems = await _db.getScheduleItemsForDate(targetDate);
-
     _healthCompletion = {};
     _scheduleCompletion = {};
-
     for (final h in _healthItems) {
       final record = await _db.getDailyRecord(targetDate, 'health', h.id!);
       _healthCompletion[h.id!] = record?.completed ?? false;
@@ -95,7 +94,6 @@ class OverviewProvider extends ChangeNotifier {
       final record = await _db.getDailyRecord(targetDate, 'schedule', s.id!);
       _scheduleCompletion[s.id!] = record?.completed ?? false;
     }
-
     _isLoading = false;
     notifyListeners();
   }
@@ -107,13 +105,53 @@ class OverviewProvider extends ChangeNotifier {
 
   Future<void> toggleHealthCompletion(int itemId) async {
     await _db.toggleCompletion(_currentDate, 'health', itemId);
-    _healthCompletion[itemId] = !(_healthCompletion[itemId] ?? false);
+    final nowCompleted = !(_healthCompletion[itemId] ?? false);
+    _healthCompletion[itemId] = nowCompleted;
+
+    if (nowCompleted) {
+      _notificationService.cancelTaskReminder(itemId + 10000);
+    } else {
+      final item = _healthItems.firstWhere((h) => h.id == itemId,
+          orElse: () => _healthItems.first);
+      if (item.reminderEnabled) {
+        final parts = item.reminderTime.split(':');
+        if (parts.length == 2) {
+          _notificationService.scheduleTaskReminder(
+            id: item.id! + 10000,
+            title: '健康提醒',
+            body: '该完成「${item.name}」啦！',
+            hour: int.tryParse(parts[0]) ?? 20,
+            minute: int.tryParse(parts[1]) ?? 0,
+          );
+        }
+      }
+    }
     notifyListeners();
   }
 
   Future<void> toggleScheduleCompletion(int itemId) async {
     await _db.toggleCompletion(_currentDate, 'schedule', itemId);
-    _scheduleCompletion[itemId] = !(_scheduleCompletion[itemId] ?? false);
+    final nowCompleted = !(_scheduleCompletion[itemId] ?? false);
+    _scheduleCompletion[itemId] = nowCompleted;
+
+    if (nowCompleted) {
+      _notificationService.cancelTaskReminder(itemId + 20000);
+    } else {
+      final item = _scheduleItems.firstWhere((s) => s.id == itemId,
+          orElse: () => _scheduleItems.first);
+      if (item.reminderEnabled) {
+        final parts = item.reminderTime.split(':');
+        if (parts.length == 2) {
+          _notificationService.scheduleTaskReminder(
+            id: item.id! + 20000,
+            title: '日程提醒',
+            body: '「${item.name}」到时间啦！',
+            hour: int.tryParse(parts[0]) ?? 20,
+            minute: int.tryParse(parts[1]) ?? 0,
+          );
+        }
+      }
+    }
     notifyListeners();
   }
 

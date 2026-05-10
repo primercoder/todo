@@ -6,6 +6,7 @@ import '../providers/settings_provider.dart';
 import '../models/schedule_item.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
+import '../utils/app_l10n.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
@@ -293,6 +294,7 @@ class _SchedulePresetSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppL10n.of(context);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -301,38 +303,26 @@ class _SchedulePresetSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
+            child: Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
             ),
           ),
           const SizedBox(height: 16),
-          Text('📚 学习日程参考', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(l10n.presetScheduleTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('点击添加推荐的日程安排', style: TextStyle(color: Colors.grey[500])),
+          Text(l10n.presetScheduleDesc, style: TextStyle(color: Colors.grey[500])),
           const SizedBox(height: 16),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: presetScheduleItems.length,
+              itemCount: l10n.presetScheduleItems.length,
               itemBuilder: (context, index) {
-                final item = presetScheduleItems[index];
+                final item = l10n.presetScheduleItems[index];
                 return ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.scheduleColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      _getPresetIcon(item['icon']!),
-                      color: AppTheme.scheduleColor,
-                      size: 22,
-                    ),
+                    decoration: BoxDecoration(color: AppTheme.scheduleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                    child: Icon(_getPresetIcon(item['icon']!), color: AppTheme.scheduleColor, size: 22),
                   ),
                   title: Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(item['description']!, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -340,22 +330,27 @@ class _SchedulePresetSheet extends StatelessWidget {
                     icon: Icon(Icons.add_circle_outline, color: AppTheme.scheduleColor),
                     onPressed: () async {
                       final provider = context.read<ScheduleProvider>();
+                      final name = item['name']!;
+                      final today = todayDate();
+                      if (provider.hasDuplicate(name, today)) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(l10n.duplicateSchedule(name, formatDate(today))),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                        return;
+                      }
                       final newItem = ScheduleItem(
-                        name: item['name']!,
-                        icon: item['icon']!,
-                        category: 'preset',
+                        name: name, icon: item['icon']!, category: 'preset',
                         description: item['description']!,
-                        scheduleDate: todayDate(),
-                        isActive: true,
+                        scheduleDate: today, isActive: true,
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('「${item['name']}」已添加到今日日程'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(l10n.addedToSchedule(name)), behavior: SnackBarBehavior.floating,
+                      ));
                     },
                   ),
                 );
@@ -467,19 +462,31 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
   }
 
   Future<void> _save() async {
-    if (_nameCtrl.text.trim().isEmpty) {
+    final l10n = AppL10n.of(context);
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('名称不能为空哦~'), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating),
       );
       return;
     }
 
     final dateStr = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+    final provider = context.read<ScheduleProvider>();
+
+    if (!isEditing && provider.hasDuplicate(name, dateStr)) {
+      final dateDisplay = '${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l10n.duplicateSchedule(name, dateDisplay)),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+
     final timeStr = '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}';
 
     final item = ScheduleItem(
-      id: widget.item?.id,
-      name: _nameCtrl.text.trim(),
+      id: widget.item?.id, name: name,
       icon: widget.item?.icon ?? 'event_note',
       category: widget.item?.category ?? 'custom',
       description: _descriptionCtrl.text.trim(),
@@ -491,7 +498,6 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
       createdAt: widget.item?.createdAt,
     );
 
-    final provider = context.read<ScheduleProvider>();
     if (isEditing) {
       await provider.updateItem(item);
     } else {
