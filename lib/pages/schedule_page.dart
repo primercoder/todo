@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../providers/schedule_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/schedule_item.dart';
@@ -436,14 +435,15 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
   }
 
   Future<void> _pickDate() async {
+    final l10n = AppL10n.of(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: '选择日程日期',
-      cancelText: '取消',
-      confirmText: '确认',
+      helpText: l10n.selectDate,
+      cancelText: l10n.cancelLabel,
+      confirmText: l10n.confirmLabel,
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
@@ -451,12 +451,13 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
   }
 
   Future<void> _pickTime() async {
+    final l10n = AppL10n.of(context);
     final picked = await showTimePicker(
       context: context,
       initialTime: _reminderTime,
-      helpText: '选择提醒时间',
-      cancelText: '取消',
-      confirmText: '确认',
+      helpText: l10n.selectTime,
+      cancelText: l10n.cancelLabel,
+      confirmText: l10n.confirmLabel,
     );
     if (picked != null) {
       setState(() => _reminderTime = picked);
@@ -545,8 +546,8 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
             TextField(
               controller: _nameCtrl,
               decoration: InputDecoration(
-                labelText: '日程名称',
-                hintText: '例如：背50个单词',
+                labelText: l10n.scheduleName,
+                hintText: l10n.scheduleNameHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.edit),
               ),
@@ -555,8 +556,8 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
             TextField(
               controller: _descriptionCtrl,
               decoration: InputDecoration(
-                labelText: '描述',
-                hintText: '简要说明这个日程要做什么',
+                labelText: l10n.descriptionLabel,
+                hintText: l10n.descriptionHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.description),
               ),
@@ -566,8 +567,8 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
               controller: _notesCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: '备注',
-                hintText: '给自己留个提醒吧~',
+                labelText: l10n.notesLabel,
+                hintText: l10n.notesHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.note),
               ),
@@ -589,10 +590,10 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('日程日期', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                        Text(l10n.scheduleDateLabel, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                         const SizedBox(height: 2),
                         Text(
-                          DateFormat('yyyy年MM月dd日').format(_selectedDate),
+                          '${_selectedDate.year}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.day.toString().padLeft(2, '0')}',
                           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                       ],
@@ -604,7 +605,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                         color: AppTheme.scheduleColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text('更改', style: TextStyle(color: AppTheme.scheduleColor, fontSize: 13)),
+                      child: Text(l10n.changeDate, style: TextStyle(color: AppTheme.scheduleColor, fontSize: 13)),
                     ),
                   ],
                 ),
@@ -613,10 +614,12 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
             const SizedBox(height: 20),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('开启提醒'),
+              title: Text(l10n.enableReminder),
               subtitle: _reminderEnabled
-                  ? Text('提醒时间: ${_reminderTime.format(context)}', style: TextStyle(color: AppTheme.accentColor))
-                  : const Text('在设定时间发送通知提醒你'),
+                  ? Text(
+                      '${l10n.reminderTimeLabel}: ${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(color: AppTheme.accentColor))
+                  : Text(l10n.reminderOffDesc),
               value: _reminderEnabled,
               activeTrackColor: AppTheme.scheduleColor,
               onChanged: (v) => setState(() => _reminderEnabled = v),

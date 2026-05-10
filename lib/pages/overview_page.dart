@@ -87,7 +87,10 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                       date.month == today.month &&
                       date.day == today.day;
 
-                  return Text(isToday ? l10n.todayOverview : formatDate(provider.currentDate));
+                  return Text(
+                    isToday ? l10n.todayOverview : formatDate(provider.currentDate),
+                    style: TextStyle(fontSize: isToday && !l10n.isZh ? 14 : 16, fontWeight: FontWeight.w600),
+                  );
                 },
               ),
               const SizedBox(width: 4),
