@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 圆角矩形外框 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,25 L80,25 Q92,25 92,37 L92,71 Q92,83 80,83 L28,83 Q16,83 16,71 L16,37 Q16,25 28,25Z" />
+
+    <!-- 心脏 -->
+    <path
+        android:fillColor="#F06292"
+        android:pathData="M54,73 C54,73 34,57 28,49 C24,43 25,34 32,30 C36,27 43,27 47,30 C50,32 52,36 54,40 C56,36 58,32 61,30 C65,27 72,27 76,30 C83,34 84,43 80,49 C74,57 54,73 54,73Z" />
+
+    <!-- 勾号 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M40,56 L49,66 L70,43"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
