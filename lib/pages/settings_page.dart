@@ -12,6 +12,7 @@ import '../database/database_helper.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
 import '../utils/app_l10n.dart';
+import '../widgets/toast_overlay.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -88,16 +89,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
       if (mounted) {
         final l10n = AppL10n.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.exportSuccess), behavior: SnackBarBehavior.floating),
-        );
+        ToastOverlay.show(l10n.exportSuccess);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppL10n.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.exportFailed(e.toString())), behavior: SnackBarBehavior.floating),
-        );
+        ToastOverlay.show(l10n.exportFailed(e.toString()));
       }
     }
   }
@@ -117,9 +114,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       if (data == null) {
         if (mounted) {
           final l10n = AppL10n.of(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.invalidFormat), behavior: SnackBarBehavior.floating),
-          );
+          ToastOverlay.show(l10n.invalidFormat);
         }
         return;
       }
@@ -141,16 +136,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         final l10n = AppL10n.of(context);
         context.read<HealthProvider>().loadItems();
         context.read<ScheduleProvider>().loadItems();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importSuccess), behavior: SnackBarBehavior.floating),
-        );
+        ToastOverlay.show(l10n.importSuccess);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppL10n.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importFailed(e.toString())), behavior: SnackBarBehavior.floating),
-        );
+        ToastOverlay.show(l10n.importFailed(e.toString()));
       }
     }
   }

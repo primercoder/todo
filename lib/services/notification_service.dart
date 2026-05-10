@@ -28,6 +28,25 @@ class NotificationService {
 
   bool _isZh(String localeCode) => localeCode == 'zh';
 
+  String get _todayStr {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<bool> _hasRecordedNotificationToday(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final recorded = prefs.getStringList('recorded_notifications') ?? [];
+    return recorded.contains('$id:$_todayStr');
+  }
+
+  Future<void> _markNotificationRecordedToday(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final recorded = prefs.getStringList('recorded_notifications') ?? [];
+    recorded.add('$id:$_todayStr');
+    if (recorded.length > 500) recorded.removeRange(0, recorded.length - 500);
+    await prefs.setStringList('recorded_notifications', recorded);
+  }
+
   Future<void> _saveNotificationRecord(String title, String body, {required String channel}) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('notification_history') ?? '[]';
@@ -57,18 +76,6 @@ class NotificationService {
     }));
   }
 
-  Future<Map<String, dynamic>?> _retrieveNotificationDetail(int id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('notification_detail_$id');
-    if (raw == null) return null;
-    try {
-      final map = json.decode(raw) as Map<String, dynamic>;
-      return map;
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<int> getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('notification_unread') ?? 0;
@@ -84,6 +91,85 @@ class NotificationService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('notification_unread', 0);
   }
+
+  // ---- Scheduled notifications metadata ----
+
+  Future<void> _saveScheduledNotification(int id, String title, String body, String channel, int hour, int minute) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('scheduled_notifications_meta') ?? '{}';
+    final map = json.decode(raw) as Map<String, dynamic>;
+    map[id.toString()] = {
+      'title': title,
+      'body': body,
+      'channel': channel,
+      'hour': hour,
+      'minute': minute,
+    };
+    await prefs.setString('scheduled_notifications_meta', json.encode(map));
+  }
+
+  Future<void> _removeScheduledNotification(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('scheduled_notifications_meta') ?? '{}';
+    final map = json.decode(raw) as Map<String, dynamic>;
+    map.remove(id.toString());
+    await prefs.setString('scheduled_notifications_meta', json.encode(map));
+  }
+
+  Future<Map<int, Map<String, dynamic>>> _getAllScheduledNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('scheduled_notifications_meta') ?? '{}';
+    final map = json.decode(raw) as Map<String, dynamic>;
+    return map.map((key, value) => MapEntry(int.parse(key), value as Map<String, dynamic>));
+  }
+
+  /// Called periodically (every 30s) while app is alive.
+  /// Saves notification records to message center when scheduled time arrives.
+  Future<void> checkAndSavePendingNotifications() async {
+    final now = DateTime.now();
+    final scheduled = await _getAllScheduledNotifications();
+
+    for (final entry in scheduled.entries) {
+      final id = entry.key;
+      final data = entry.value;
+      final hour = data['hour'] as int;
+      final minute = data['minute'] as int;
+
+      if (now.hour == hour && now.minute == minute) {
+        if (!await _hasRecordedNotificationToday(id)) {
+          final title = data['title'] as String? ?? '';
+          final body = data['body'] as String? ?? '';
+          final channel = data['channel'] as String? ?? 'task_reminders';
+          await _saveNotificationRecord(title, body, channel: channel);
+          await _markNotificationRecordedToday(id);
+        }
+      }
+    }
+  }
+
+  /// Called on app start/resume to catch notifications that fired while app was away.
+  Future<void> catchUpMissedNotifications() async {
+    final now = DateTime.now();
+    final scheduled = await _getAllScheduledNotifications();
+
+    for (final entry in scheduled.entries) {
+      final id = entry.key;
+      final data = entry.value;
+      final hour = data['hour'] as int;
+      final minute = data['minute'] as int;
+
+      final scheduledTime = DateTime(now.year, now.month, now.day, hour, minute);
+      if (scheduledTime.isBefore(now) && !await _hasRecordedNotificationToday(id)) {
+        final title = data['title'] as String? ?? '';
+        final body = data['body'] as String? ?? '';
+        final channel = data['channel'] as String? ?? 'task_reminders';
+        await _saveNotificationRecord(title, body, channel: channel);
+        await _markNotificationRecordedToday(id);
+      }
+    }
+  }
+
+  // ---- Initialization ----
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -155,6 +241,9 @@ class NotificationService {
 
   void _onNotificationResponse(NotificationResponse response) {
     _pendingCallbackResponse = response;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      processPendingNotification();
+    });
   }
 
   @pragma('vm:entry-point')
@@ -165,14 +254,10 @@ class NotificationService {
     _pendingCallbackResponse = null;
     if (response == null) return;
 
-    final detail = await _retrieveNotificationDetail(response.id ?? 0);
-    if (detail != null) {
-      await _saveNotificationRecord(
-        detail['title'] as String? ?? '通知',
-        detail['body'] as String? ?? '',
-        channel: detail['channel'] as String? ?? 'task_reminders',
-      );
-    }
+    final id = response.id ?? 0;
+    if (id == 0) return;
+
+    await catchUpMissedNotifications();
 
     final payload = response.payload;
     if (payload != null && payload.isNotEmpty) {
@@ -264,6 +349,7 @@ class NotificationService {
       payload: '/messages',
     );
     await _storeNotificationDetail(id, title, body, 'task_reminders');
+    await _saveScheduledNotification(id, title, body, 'task_reminders', hour, minute);
   }
 
   Future<void> scheduleTaskReminder({
@@ -310,6 +396,7 @@ class NotificationService {
       payload: '/messages',
     );
     await _storeNotificationDetail(summaryId, '今日总结', summary, 'daily_summary');
+    await _saveScheduledNotification(summaryId, '今日总结', summary, 'daily_summary', hour, minute);
   }
 
   Future<String> _calculateTodaysSummary() async {
@@ -478,10 +565,12 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
     await _storeNotificationDetail(refreshId, title, body, 'midnight_refresh');
+    await _saveScheduledNotification(refreshId, title, body, 'midnight_refresh', 0, 0);
   }
 
   Future<void> cancelTaskReminder(int id) async {
     await _plugin.cancel(id: id);
+    await _removeScheduledNotification(id);
   }
 
   Future<void> cancelAllReminders() async {
@@ -490,10 +579,12 @@ class NotificationService {
 
   Future<void> cancelSummary() async {
     await _plugin.cancel(id: 999999);
+    await _removeScheduledNotification(999999);
   }
 
   Future<void> cancelMidnightRefresh() async {
     await _plugin.cancel(id: 999998);
+    await _removeScheduledNotification(999998);
   }
 
   Future<void> rescheduleAllReminders() async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -102,6 +103,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late int _currentIndex;
   late final List<Widget> _pages;
   final NotificationService _notificationService = NotificationService();
+  Timer? _notificationTimer;
 
   @override
   void initState() {
@@ -146,13 +148,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               settings.markNotificationsSetupComplete();
             }
           }
+          _notificationService.catchUpMissedNotifications();
+          _startNotificationTimer();
         } catch (_) {}
       });
     } catch (_) {}
   }
 
+  void _startNotificationTimer() {
+    _notificationTimer?.cancel();
+    _notificationTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      _notificationService.checkAndSavePendingNotifications();
+    });
+  }
+
   @override
   void dispose() {
+    _notificationTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -160,6 +172,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _notificationService.catchUpMissedNotifications();
       context.read<OverviewProvider>().initializeToday();
     }
   }

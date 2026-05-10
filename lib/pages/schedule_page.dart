@@ -6,6 +6,7 @@ import '../models/schedule_item.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
 import '../utils/app_l10n.dart';
+import '../widgets/toast_overlay.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
@@ -334,14 +335,7 @@ class _SchedulePresetSheet extends StatelessWidget {
                       final name = item['name']!;
                       final today = todayDate();
                       if (provider.hasDuplicate(name, today)) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(l10n.duplicateSchedule(name, formatDate(today))),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 1),
-                            margin: const EdgeInsets.only(bottom: 100.0),
-                          ));
-                        }
+                        ToastOverlay.show(l10n.duplicateSchedule(name, formatDate(today)));
                         return;
                       }
                       final newItem = ScheduleItem(
@@ -351,11 +345,7 @@ class _SchedulePresetSheet extends StatelessWidget {
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(l10n.addedToSchedule(name)), behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 1),
-                        margin: const EdgeInsets.only(bottom: 100.0),
-                      ));
+                      ToastOverlay.show(l10n.addedToSchedule(name));
                     },
                   ),
                 );
@@ -472,12 +462,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
     final l10n = AppL10n.of(context);
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-          margin: const EdgeInsets.only(bottom: 100.0),
-        ),
-      );
+      ToastOverlay.show(l10n.nameRequired);
       return;
     }
 
@@ -486,12 +471,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
 
     if (!isEditing && provider.hasDuplicate(name, dateStr)) {
       final dateDisplay = '${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l10n.duplicateSchedule(name, dateDisplay)),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 1),
-        margin: const EdgeInsets.only(bottom: 100.0),
-      ));
+      ToastOverlay.show(l10n.duplicateSchedule(name, dateDisplay));
       return;
     }
 

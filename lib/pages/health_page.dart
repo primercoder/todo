@@ -6,6 +6,7 @@ import '../providers/settings_provider.dart';
 import '../models/health_item.dart';
 import '../utils/theme.dart';
 import '../utils/app_l10n.dart';
+import '../widgets/toast_overlay.dart';
 
 class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
@@ -297,14 +298,7 @@ class _PresetPickerSheet extends StatelessWidget {
                       final provider = context.read<HealthProvider>();
                       final name = item['name']!;
                       if (provider.hasDuplicateName(name)) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(l10n.duplicateHealth(name)),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 1),
-                            margin: const EdgeInsets.only(bottom: 100.0),
-                          ));
-                        }
+                        ToastOverlay.show(l10n.duplicateHealth(name));
                         return;
                       }
                       final newItem = HealthItem(
@@ -314,11 +308,7 @@ class _PresetPickerSheet extends StatelessWidget {
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(l10n.addedToHealth(name)), behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 1),
-                        margin: const EdgeInsets.only(bottom: 100.0),
-                      ));
+                      ToastOverlay.show(l10n.addedToHealth(name));
                     },
                   ),
                 );
@@ -413,24 +403,14 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
     final l10n = AppL10n.of(context);
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-          margin: const EdgeInsets.only(bottom: 100.0),
-        ),
-      );
+      ToastOverlay.show(l10n.nameRequired);
       return;
     }
 
     final provider = context.read<HealthProvider>();
 
     if (!isEditing && provider.hasDuplicateName(name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.duplicateHealth(name)), behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-          margin: const EdgeInsets.only(bottom: 100.0),
-        ),
-      );
+      ToastOverlay.show(l10n.duplicateHealth(name));
       return;
     }
 
