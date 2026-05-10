@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/health_provider.dart';
@@ -59,6 +60,9 @@ class TodoApp extends StatelessWidget {
             supportedLocales: const [Locale('zh'), Locale('en')],
             localizationsDelegates: const [
               AppLocalizationDelegate(),
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
