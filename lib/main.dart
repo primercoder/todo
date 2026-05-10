@@ -107,24 +107,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       SettingsPage(),
     ];
     WidgetsBinding.instance.addObserver(this);
-    _requestPermissions();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = context.read<SettingsProvider>();
-      if (settings.notificationsEnabled) {
-        final st = settings.defaultSummaryTime.split(':');
-        if (st.length == 2) {
-          _notificationService.scheduleSummaryNotification(
-            int.tryParse(st[0]) ?? 23,
-            int.tryParse(st[1]) ?? 0,
-          );
-        }
-        _notificationService.scheduleMidnightRefresh();
-      }
-    });
+    _safeInit();
   }
 
-  Future<void> _requestPermissions() async {
-    await _notificationService.requestPermissions();
+  Future<void> _safeInit() async {
+    try {
+      await _notificationService.requestPermissions();
+    } catch (_) {}
+    try {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final settings = context.read<SettingsProvider>();
+          if (settings.notificationsEnabled) {
+            final st = settings.defaultSummaryTime.split(':');
+            if (st.length == 2) {
+              _notificationService.scheduleSummaryNotification(
+                int.tryParse(st[0]) ?? 23, int.tryParse(st[1]) ?? 0,
+              );
+            }
+            _notificationService.scheduleMidnightRefresh();
+          }
+        } catch (_) {}
+      });
+    } catch (_) {}
   }
 
   @override

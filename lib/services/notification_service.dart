@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'dart:convert';
 import '../database/database_helper.dart';
 import '../utils/constants.dart';
 
@@ -24,6 +25,20 @@ class NotificationService {
   }
 
   bool _isZh(String localeCode) => localeCode == 'zh';
+
+  Future<void> _saveNotificationRecord(String title, String body) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('notification_history') ?? '[]';
+    List list;
+    try {
+      list = json.decode(raw) as List;
+    } catch (_) {
+      list = [];
+    }
+    list.add({'title': title, 'body': body, 'time': DateTime.now().toIso8601String()});
+    if (list.length > 50) list = list.sublist(list.length - 50);
+    await prefs.setString('notification_history', json.encode(list));
+  }
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -88,10 +103,12 @@ class NotificationService {
           'task_reminders',
           '任务提醒',
           channelDescription: '健康计划和日程安排提醒',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
+          visibility: NotificationVisibility.public,
           enableVibration: true,
           playSound: true,
+          category: AndroidNotificationCategory.reminder,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -104,6 +121,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       payload: '/overview',
     );
+    await _saveNotificationRecord(title, body);
   }
 
   Future<void> scheduleSummaryNotification(int hour, int minute) async {
@@ -122,10 +140,12 @@ class NotificationService {
           'daily_summary',
           '每日总结',
           channelDescription: '每天定时发送完成情况总结',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
+          visibility: NotificationVisibility.public,
           enableVibration: true,
           playSound: true,
+          category: AndroidNotificationCategory.recommendation,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -138,6 +158,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       payload: '/overview',
     );
+    await _saveNotificationRecord('📋 今日总结', summary);
   }
 
   Future<String> _calculateTodaysSummary() async {
@@ -292,7 +313,8 @@ class NotificationService {
           '每日刷新',
           channelDescription: '每日零点刷新通知',
           importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
+          priority: Priority.low,
+          visibility: NotificationVisibility.public,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

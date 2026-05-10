@@ -124,11 +124,15 @@ class AppL10n {
   String get importSuccess => isZh ? '数据导入成功！' : 'Data imported!';
   String importFailed(String e) => isZh ? '导入失败: $e' : 'Import failed: $e';
   String get invalidFormat => isZh ? '文件格式不正确' : 'Invalid file format';
-  String get languageSection => isZh ? '🌐 语言' : '🌐 Language';
+  String get languageSection => isZh ? '🌐 语言 / Language' : '🌐 Language';
   String get chineseLabel => isZh ? '简体中文' : 'Simplified Chinese';
   String get englishLabel => isZh ? 'English' : 'English';
   String get todoSlogan => isZh ? '助你养成好习惯 ✨' : 'Build good habits ✨';
   String get selectTime => isZh ? '选择时间' : 'Select Time';
+  String get messageCenter => isZh ? '消息中心' : 'Messages';
+  String get noMessages => isZh ? '暂无消息' : 'No messages';
+  String get bellTooltip => isZh ? '消息' : 'Messages';
+  String get confirmDeleteTitle => isZh ? '确认删除' : 'Confirm Delete';
 
   // Help dialog
   String get helpTitle => isZh ? '📖 使用帮助' : '📖 Help';

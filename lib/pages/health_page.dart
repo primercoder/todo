@@ -66,6 +66,7 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -75,14 +76,14 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
           children: [
             Icon(Icons.favorite, color: AppTheme.healthColor),
             const SizedBox(width: 8),
-            const Text('健康计划'),
+            Text(l10n.healthTitle),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.lightbulb_outline),
             onPressed: _showPresetPicker,
-            tooltip: '参考项目',
+            tooltip: l10n.presetProjectsTooltip,
           ),
         ],
       ),
@@ -91,7 +92,7 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          final l10n2 = AppL10n.of(context);
           if (provider.activeItems.isEmpty) {
             return SlideTransition(
               position: _slideAnimation,
@@ -101,9 +102,9 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
                   children: [
                     Icon(Icons.fitness_center, size: 64, color: Colors.grey[300]),
                     const SizedBox(height: 16),
-                    Text('还没有健康计划', style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                    Text(l10n2.noHealthPlan, style: TextStyle(color: Colors.grey[400], fontSize: 16)),
                     const SizedBox(height: 8),
-                    Text('点击右下角「+」或右上角灯泡添加吧~', style: TextStyle(color: Colors.grey[400])),
+                    Text(l10n2.addHealthHint, style: TextStyle(color: Colors.grey[400])),
                   ],
                 ),
               ),
@@ -217,11 +218,12 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
   }
 
   void _confirmDelete(HealthItem item) {
+    final l10n = AppL10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除「${item.name}」吗？\n相关的历史记录也会被删除哦~'),
+        title: Text(l10n.deleteTitle),
+        content: Text(l10n.confirmDeleteHealth(item.name)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           TextButton(
@@ -451,12 +453,11 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppL10n.of(context);
 
     return Container(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
+        left: 20, right: 20, top: 20,
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: SingleChildScrollView(
@@ -464,27 +465,20 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+            Center(child: Container(width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            )),
             const SizedBox(height: 20),
             Text(
-              isEditing ? '编辑健康计划' : '添加健康计划',
+              isEditing ? l10n.editHealth : l10n.addNewHealth,
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _nameCtrl,
               decoration: InputDecoration(
-                labelText: '项目名称',
-                hintText: '例如：每天喝8杯水',
+                labelText: l10n.itemName,
+                hintText: l10n.itemNameHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.edit),
               ),
@@ -493,8 +487,8 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
             TextField(
               controller: _defaultValueCtrl,
               decoration: InputDecoration(
-                labelText: '建议值',
-                hintText: '例如：2000ml / 5公里',
+                labelText: l10n.suggestedValueLabel,
+                hintText: l10n.suggestedValueHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.trending_up),
               ),
@@ -504,8 +498,8 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
               controller: _notesCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: '备注',
-                hintText: '给自己留个小贴士吧~',
+                labelText: l10n.notesLabel,
+                hintText: l10n.notesHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.note),
               ),
@@ -513,10 +507,12 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
             const SizedBox(height: 20),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('开启提醒'),
+              title: Text(l10n.enableReminder),
               subtitle: _reminderEnabled
-                  ? Text('提醒时间: ${_reminderTime.format(context)}', style: TextStyle(color: AppTheme.accentColor))
-                  : const Text('在设定时间发送通知提醒你'),
+                  ? Text(
+                      '${l10n.reminderTimeLabel}: ${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(color: AppTheme.accentColor))
+                  : Text(l10n.reminderOffDesc),
               value: _reminderEnabled,
               activeTrackColor: AppTheme.healthColor,
               onChanged: (v) => setState(() => _reminderEnabled = v),
@@ -545,7 +541,7 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(isEditing ? '保存修改' : '添加计划', style: const TextStyle(fontSize: 16)),
+                child: Text(isEditing ? l10n.save : l10n.add, style: const TextStyle(fontSize: 16)),
               ),
             ),
           ],

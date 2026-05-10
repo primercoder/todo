@@ -7,6 +7,7 @@ import '../utils/app_l10n.dart';
 import '../widgets/task_card.dart';
 import '../widgets/filter_bar.dart';
 import '../database/database_helper.dart';
+import '../pages/notification_history_page.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -95,6 +96,11 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationHistoryPage())),
+            tooltip: l10n.bellTooltip,
+          ),
           IconButton(
             icon: Icon(_showFilters ? Icons.filter_list_off : Icons.filter_list),
             onPressed: () {

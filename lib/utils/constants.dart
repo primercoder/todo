@@ -109,7 +109,7 @@ String todayDate() {
 String formatDate(String dateStr) {
   final parts = dateStr.split('-');
   if (parts.length == 3) {
-    return '${parts[0]}年${parts[1]}月${parts[2]}日';
+    return '${parts[0]}/${parts[1]}/${parts[2]}';
   }
   return dateStr;
 }

@@ -64,6 +64,7 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -73,14 +74,14 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
           children: [
             Icon(Icons.event, color: AppTheme.scheduleColor),
             const SizedBox(width: 8),
-            const Text('日程安排'),
+            Text(l10n.scheduleTitle),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.lightbulb_outline),
             onPressed: _showPresetPicker,
-            tooltip: '参考项目',
+            tooltip: l10n.presetProjectsTooltip,
           ),
         ],
       ),
@@ -89,7 +90,7 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          final l10n2 = AppL10n.of(context);
           if (provider.allItems.isEmpty) {
             return FadeTransition(
               opacity: _fadeAnimation,
@@ -99,9 +100,9 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
                   children: [
                     Icon(Icons.event_busy, size: 64, color: Colors.grey[300]),
                     const SizedBox(height: 16),
-                    Text('还没有日程安排', style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                    Text(l10n2.noSchedule, style: TextStyle(color: Colors.grey[400], fontSize: 16)),
                     const SizedBox(height: 8),
-                    Text('点击右下角「+」或右上角灯泡添加吧~', style: TextStyle(color: Colors.grey[400])),
+                    Text(l10n2.addScheduleHint, style: TextStyle(color: Colors.grey[400])),
                   ],
                 ),
               ),
@@ -254,11 +255,12 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
   }
 
   void _confirmDelete(ScheduleItem item) {
+    final l10n = AppL10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除「${item.name}」日程吗？\n相关记录也会被删除哦~'),
+        title: Text(l10n.confirmDeleteTitle),
+        content: Text(l10n.confirmDeleteSchedule(item.name)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           TextButton(
@@ -509,6 +511,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final theme = Theme.of(context);
 
     return Container(
@@ -535,7 +538,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
             ),
             const SizedBox(height: 20),
             Text(
-              isEditing ? '编辑日程' : '添加日程',
+              isEditing ? l10n.editSchedule : l10n.addNewSchedule,
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -642,7 +645,7 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(isEditing ? '保存修改' : '添加日程', style: const TextStyle(fontSize: 16)),
+                child: Text(isEditing ? l10n.save : l10n.add, style: const TextStyle(fontSize: 16)),
               ),
             ),
           ],

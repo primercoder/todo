@@ -11,6 +11,7 @@ import '../providers/schedule_provider.dart';
 import '../database/database_helper.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
+import '../utils/app_l10n.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -41,18 +42,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   }
 
   Future<void> _pickTime(String currentTime, ValueChanged<String> onTimePicked) async {
+    final l10n = AppL10n.of(context);
     final parts = currentTime.split(':');
     final initialTime = TimeOfDay(
       hour: int.tryParse(parts[0]) ?? 20,
       minute: int.tryParse(parts[1]) ?? 0,
     );
-
     final picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
-      helpText: '选择时间',
-      cancelText: '取消',
-      confirmText: '确认',
+      helpText: l10n.selectTime,
+      cancelText: l10n.cancelLabel,
+      confirmText: l10n.confirmLabel,
     );
 
     if (picked != null) {
@@ -86,14 +87,16 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       );
 
       if (mounted) {
+        final l10n = AppL10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('数据导出成功！'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.exportSuccess), behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppL10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('导出失败: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.exportFailed(e.toString())), behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -113,8 +116,9 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
       if (data == null) {
         if (mounted) {
+          final l10n = AppL10n.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('文件格式不正确'), behavior: SnackBarBehavior.floating),
+            SnackBar(content: Text(l10n.invalidFormat), behavior: SnackBarBehavior.floating),
           );
         }
         return;
@@ -134,61 +138,36 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       }
 
       if (mounted) {
+        final l10n = AppL10n.of(context);
         context.read<HealthProvider>().loadItems();
         context.read<ScheduleProvider>().loadItems();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('数据导入成功！'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.importSuccess), behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppL10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('导入失败: $e'), behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(l10n.importFailed(e.toString())), behavior: SnackBarBehavior.floating),
         );
       }
     }
   }
 
   void _showHelpDialog() {
+    final l10n = AppL10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('📖 使用帮助'),
-        content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('🏠 概览', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('查看当天所有待办事项，分为「健康计划」和「日程安排」两部分。点击事项左侧复选框即可标记完成。支持按类别和完成度筛选，点击右上角可查看历史记录。'),
-              SizedBox(height: 12),
-              Text('❤️ 健康', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('管理每日健康习惯。点击「+」添加自定义计划，点击灯泡图标查看推荐项目（如饮水、跑步、远眺等）。每个项目可设置提醒时间和备注。健康计划每天自动刷新。'),
-              SizedBox(height: 12),
-              Text('📅 日程', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('管理特定日期的日程安排。设置日程名称、日期、提醒时间等。日程仅在指定日期显示在概览页面。点击灯泡图标可查看学习类推荐项目。'),
-              SizedBox(height: 12),
-              Text('⚙️ 设置', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('设置主题风格（明亮/暗黑/花园/海洋/日落）、默认提醒时间（默认20:00）、每日总结时间（默认23:00）。支持数据导出导入备份。'),
-              SizedBox(height: 12),
-              Text('🔔 提醒', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('开启提醒后，App会在设定时间发送通知。每日总结会在设定时间汇总当天完成情况，并送上鼓励语句。即使App未运行也会发送通知（需授权通知权限）。'),
-              SizedBox(height: 12),
-              Text('🔄 刷新', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              SizedBox(height: 4),
-              Text('每天00:00自动刷新：健康计划重新开始计数，日程根据日期自动显示/隐藏。历史记录可在概览页右上角查看。'),
-            ],
-          ),
+        title: Text(l10n.helpTitle),
+        content: SingleChildScrollView(
+          child: Text(l10n.helpContent, style: const TextStyle(fontSize: 14)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('知道了'),
+            child: Text(l10n.helpGotIt),
           ),
         ],
       ),
@@ -198,57 +177,40 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final l10n = AppL10n.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('设置'),
-      ),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: FadeTransition(
         opacity: _animation,
         child: ListView(
           padding: const EdgeInsets.only(bottom: 40),
           children: [
-            // Theme Section
-            _buildSectionHeader('🎨 主题风格'),
+            _buildSectionHeader(l10n.themeSection),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
                 child: Column(
                   children: [
                     _buildThemeOption(
-                      '明亮',
-                      'light',
-                      Icons.light_mode,
-                      settings.themeName,
-                      () => settings.setTheme('light'),
+                      l10n.lightTheme, 'light', Icons.light_mode,
+                      settings.themeName, () => settings.setTheme('light'),
                     ),
                     _buildThemeOption(
-                      '暗黑',
-                      'dark',
-                      Icons.dark_mode,
-                      settings.themeName,
-                      () => settings.setTheme('dark'),
+                      l10n.darkTheme, 'dark', Icons.dark_mode,
+                      settings.themeName, () => settings.setTheme('dark'),
                     ),
                     _buildThemeOption(
-                      '花园',
-                      'garden',
-                      Icons.local_florist,
-                      settings.themeName,
-                      () => settings.setTheme('garden'),
+                      l10n.gardenTheme, 'garden', Icons.local_florist,
+                      settings.themeName, () => settings.setTheme('garden'),
                     ),
                     _buildThemeOption(
-                      '海洋',
-                      'ocean',
-                      Icons.water,
-                      settings.themeName,
-                      () => settings.setTheme('ocean'),
+                      l10n.oceanTheme, 'ocean', Icons.water,
+                      settings.themeName, () => settings.setTheme('ocean'),
                     ),
                     _buildThemeOption(
-                      '日落',
-                      'sunset',
-                      Icons.wb_sunny,
-                      settings.themeName,
-                      () => settings.setTheme('sunset'),
+                      l10n.sunsetTheme, 'sunset', Icons.wb_sunny,
+                      settings.themeName, () => settings.setTheme('sunset'),
                     ),
                   ],
                 ),
@@ -258,23 +220,23 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const SizedBox(height: 16),
 
             // Notification Settings
-            _buildSectionHeader('🔔 提醒设置'),
+            _buildSectionHeader(l10n.notificationSection),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
                 child: Column(
                   children: [
                     SwitchListTile(
-                      title: const Text('启用通知'),
-                      subtitle: const Text('关闭后所有提醒和总结将不会发送'),
+                      title: Text(l10n.notificationToggle),
+                      subtitle: Text(l10n.notificationOffDesc),
                       value: settings.notificationsEnabled,
                       onChanged: settings.setNotificationsEnabled,
                       secondary: const Icon(Icons.notifications),
                     ),
                     ListTile(
                       leading: const Icon(Icons.alarm),
-                      title: const Text('默认提醒时间'),
-                      subtitle: Text('新项目的默认提醒时间'),
+                      title: Text(l10n.defaultReminderTimeLabel),
+                      subtitle: Text(l10n.defaultReminderDesc),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -296,8 +258,8 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     ),
                     ListTile(
                       leading: const Icon(Icons.summarize),
-                      title: const Text('每日总结时间'),
-                      subtitle: const Text('每天此时发送完成情况总结'),
+                      title: Text(l10n.summaryTimeLabel),
+                      subtitle: Text(l10n.summaryDesc),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -325,7 +287,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const SizedBox(height: 16),
 
             // Data Management
-            _buildSectionHeader('💾 数据管理'),
+            _buildSectionHeader(l10n.dataSection),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -333,14 +295,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   children: [
                     ListTile(
                       leading: const Icon(Icons.upload_file),
-                      title: const Text('导出数据'),
-                      subtitle: const Text('将健康计划和日程导出为JSON文件'),
+                      title: Text(l10n.exportDataLabel),
+                      subtitle: Text(l10n.exportDesc),
                       onTap: _exportData,
                     ),
                     ListTile(
                       leading: const Icon(Icons.download),
-                      title: const Text('导入数据'),
-                      subtitle: const Text('从备份文件恢复数据'),
+                      title: Text(l10n.importDataLabel),
+                      subtitle: Text(l10n.importDesc),
                       onTap: _importData,
                     ),
                   ],
@@ -351,7 +313,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const SizedBox(height: 16),
 
             // Language
-            _buildSectionHeader('🌐 语言 / Language'),
+            _buildSectionHeader(l10n.languageSection),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -359,7 +321,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   children: [
                     ListTile(
                       leading: const Icon(Icons.language),
-                      title: const Text('简体中文'),
+                      title: Text(l10n.chineseLabel),
                       trailing: settings.localeCode == 'zh'
                           ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
                           : null,
@@ -367,7 +329,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     ),
                     ListTile(
                       leading: const Icon(Icons.language),
-                      title: const Text('English'),
+                      title: Text(l10n.englishLabel),
                       trailing: settings.localeCode == 'en'
                           ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
                           : null,
@@ -381,14 +343,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             const SizedBox(height: 16),
 
             // Help
-            _buildSectionHeader('ℹ️ 其他'),
+            _buildSectionHeader(l10n.otherSection),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
                 child: ListTile(
                   leading: const Icon(Icons.help_outline),
-                  title: const Text('使用帮助'),
-                  subtitle: const Text('了解App的详细使用方式'),
+                  title: Text(l10n.helpLabel),
+                  subtitle: Text(l10n.helpDesc),
                   onTap: _showHelpDialog,
                 ),
               ),
@@ -396,16 +358,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
             const SizedBox(height: 40),
             Center(
-              child: Text(
-                'TODO v1.0.0',
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-              ),
+              child: Text('TODO v1.0.0', style: TextStyle(color: Colors.grey[400], fontSize: 12)),
             ),
             Center(
-              child: Text(
-                '助你养成好习惯 ✨',
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-              ),
+              child: Text(l10n.todoSlogan, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
             ),
           ],
         ),
