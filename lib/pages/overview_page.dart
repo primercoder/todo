@@ -7,6 +7,7 @@ import '../utils/app_l10n.dart';
 import '../widgets/task_card.dart';
 import '../widgets/filter_bar.dart';
 import '../database/database_helper.dart';
+import '../services/notification_service.dart';
 import '../pages/notification_history_page.dart';
 
 class OverviewPage extends StatefulWidget {
@@ -21,6 +22,12 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
   late Animation<double> _fadeAnimation;
   bool _showFilters = false;
   bool _showHistory = false;
+  int _unreadCount = 0;
+
+  Future<void> _refreshUnread() async {
+    final count = await NotificationService().getUnreadCount();
+    if (mounted) setState(() => _unreadCount = count);
+  }
 
   @override
   void initState() {
@@ -34,6 +41,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<OverviewProvider>().initializeToday();
+      _refreshUnread();
     });
   }
 
@@ -100,8 +108,46 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationHistoryPage())),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_outlined),
+                if (_unreadCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: _unreadCount > 9
+                          ? const EdgeInsets.symmetric(horizontal: 4, vertical: 2)
+                          : const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: _unreadCount > 9
+                          ? null
+                          : const BoxConstraints(minWidth: 8, minHeight: 8),
+                      child: _unreadCount > 9
+                          ? Text(
+                              '$_unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () async {
+              await NotificationService().clearUnread();
+              if (mounted) setState(() => _unreadCount = 0);
+              if (context.mounted) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationHistoryPage()));
+              }
+            },
             tooltip: l10n.bellTooltip,
           ),
           IconButton(

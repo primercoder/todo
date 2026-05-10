@@ -10,6 +10,7 @@ import 'pages/overview_page.dart';
 import 'pages/health_page.dart';
 import 'pages/schedule_page.dart';
 import 'pages/settings_page.dart';
+import 'pages/notification_history_page.dart';
 import 'utils/theme.dart';
 import 'utils/app_l10n.dart';
 
@@ -21,6 +22,7 @@ void main() async {
   final notificationService = NotificationService();
   notificationService.navigatorKey = navigatorKey;
   await notificationService.initialize();
+  await notificationService.ensureChannels();
 
   final settingsProvider = SettingsProvider();
   await settingsProvider.loadSettings();
@@ -29,6 +31,10 @@ void main() async {
     settingsProvider: settingsProvider,
     notificationService: notificationService,
   ));
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    notificationService.processPendingNotification();
+  });
 }
 
 class TodoApp extends StatelessWidget {
@@ -75,6 +81,7 @@ class TodoApp extends StatelessWidget {
               '/health': (_) => const MainScreen(initialIndex: 1),
               '/schedule': (_) => const MainScreen(initialIndex: 2),
               '/settings': (_) => const MainScreen(initialIndex: 3),
+              '/messages': (_) => const NotificationHistoryPage(),
             },
           );
         },
@@ -118,6 +125,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
           final settings = context.read<SettingsProvider>();
+          final l10n = AppL10n.of(context);
           if (settings.notificationsEnabled) {
             final st = settings.defaultSummaryTime.split(':');
             if (st.length == 2) {
@@ -126,6 +134,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               );
             }
             _notificationService.scheduleMidnightRefresh();
+            _notificationService.rescheduleAllReminders();
+
+            if (!settings.notificationsSetupComplete) {
+              _notificationService.showImmediateNotification(
+                title: l10n.isZh ? '通知功能已就绪' : 'Notifications Ready',
+                body: l10n.isZh
+                    ? '你将在设定的提醒时间收到任务提醒。请确保在系统设置中开启了通知权限。'
+                    : 'You will receive task reminders at set times. Ensure notifications are enabled in system settings.',
+              );
+              settings.markNotificationsSetupComplete();
+            }
           }
         } catch (_) {}
       });
@@ -141,7 +160,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Refresh data when app comes to foreground
       context.read<OverviewProvider>().initializeToday();
     }
   }

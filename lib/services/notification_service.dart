@@ -1,9 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'dart:convert';
 import '../database/database_helper.dart';
 import '../utils/constants.dart';
 
@@ -16,6 +16,8 @@ class NotificationService {
   final DatabaseHelper _db = DatabaseHelper();
 
   bool _initialized = false;
+  bool _channelsCreated = false;
+  NotificationResponse? _pendingCallbackResponse;
 
   late GlobalKey<NavigatorState> navigatorKey;
 
@@ -26,7 +28,7 @@ class NotificationService {
 
   bool _isZh(String localeCode) => localeCode == 'zh';
 
-  Future<void> _saveNotificationRecord(String title, String body) async {
+  Future<void> _saveNotificationRecord(String title, String body, {required String channel}) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('notification_history') ?? '[]';
     List list;
@@ -35,9 +37,52 @@ class NotificationService {
     } catch (_) {
       list = [];
     }
-    list.add({'title': title, 'body': body, 'time': DateTime.now().toIso8601String()});
-    if (list.length > 50) list = list.sublist(list.length - 50);
+    list.insert(0, {
+      'title': title,
+      'body': body,
+      'time': DateTime.now().toIso8601String(),
+      'channel': channel,
+    });
+    if (list.length > 100) list = list.sublist(0, 100);
     await prefs.setString('notification_history', json.encode(list));
+    await _incrementUnread();
+  }
+
+  Future<void> _storeNotificationDetail(int id, String title, String body, String channel) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('notification_detail_$id', json.encode({
+      'title': title,
+      'body': body,
+      'channel': channel,
+    }));
+  }
+
+  Future<Map<String, dynamic>?> _retrieveNotificationDetail(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('notification_detail_$id');
+    if (raw == null) return null;
+    try {
+      final map = json.decode(raw) as Map<String, dynamic>;
+      return map;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<int> getUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('notification_unread') ?? 0;
+  }
+
+  Future<void> _incrementUnread() async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = (prefs.getInt('notification_unread') ?? 0) + 1;
+    await prefs.setInt('notification_unread', count);
+  }
+
+  Future<void> clearUnread() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('notification_unread', 0);
   }
 
   Future<void> initialize() async {
@@ -45,60 +90,120 @@ class NotificationService {
 
     tz_data.initializeTimeZones();
 
+    final systemOffset = DateTime.now().timeZoneOffset;
+    if (systemOffset == const Duration(hours: 8)) {
+      try {
+        final shanghai = tz.getLocation('Asia/Shanghai');
+        tz.setLocalLocation(shanghai);
+      } catch (_) {}
+    }
+
+    _initialized = true;
+  }
+
+  Future<void> ensureChannels() async {
+    if (_channelsCreated) return;
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (android != null) {
+      await android.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'task_reminders', '任务提醒',
+          description: '健康计划和日程安排提醒',
+          importance: Importance.max,
+          enableVibration: true,
+          playSound: true,
+        ),
+      );
+      await android.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'daily_summary', '每日总结',
+          description: '每天定时发送完成情况总结',
+          importance: Importance.max,
+          enableVibration: true,
+          playSound: true,
+        ),
+      );
+      await android.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'midnight_refresh', '每日刷新',
+          description: '每日零点刷新通知',
+          importance: Importance.defaultImportance,
+        ),
+      );
+    }
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-
     const settings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
 
     await _plugin.initialize(
-      settings,
+      settings: settings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
       onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
     );
 
-    _initialized = true;
+    _channelsCreated = true;
   }
 
   void _onNotificationResponse(NotificationResponse response) {
-    if (response.payload != null) {
-      navigatorKey.currentState?.pushNamed(response.payload!);
-    }
+    _pendingCallbackResponse = response;
   }
 
   @pragma('vm:entry-point')
   static void _onBackgroundNotificationResponse(NotificationResponse response) {}
+
+  Future<void> processPendingNotification() async {
+    final response = _pendingCallbackResponse;
+    _pendingCallbackResponse = null;
+    if (response == null) return;
+
+    final detail = await _retrieveNotificationDetail(response.id ?? 0);
+    if (detail != null) {
+      await _saveNotificationRecord(
+        detail['title'] as String? ?? '通知',
+        detail['body'] as String? ?? '',
+        channel: detail['channel'] as String? ?? 'task_reminders',
+      );
+    }
+
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) {
+      final nav = navigatorKey.currentState;
+      nav?.pushNamed(payload);
+    }
+  }
 
   Future<bool> requestPermissions() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
       await android.requestNotificationsPermission();
-      await android.requestExactAlarmsPermission();
+      try {
+        await android.requestExactAlarmsPermission();
+      } catch (_) {}
       return true;
     }
     return false;
   }
 
-  Future<void> scheduleTaskReminder({
-    required int id,
+  Future<void> showImmediateNotification({
     required String title,
     required String body,
-    required int hour,
-    required int minute,
   }) async {
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      _nextInstanceOfTime(hour, minute),
-      const NotificationDetails(
+    const id = 0;
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'task_reminders',
           '任务提醒',
@@ -116,26 +221,73 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+      payload: '/messages',
+    );
+    await _storeNotificationDetail(id, title, body, 'task_reminders');
+    await _saveNotificationRecord(title, body, channel: 'task_reminders');
+  }
+
+  static const _taskReminderDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'task_reminders',
+      '任务提醒',
+      channelDescription: '健康计划和日程安排提醒',
+      importance: Importance.max,
+      priority: Priority.high,
+      visibility: NotificationVisibility.public,
+      enableVibration: true,
+      playSound: true,
+      category: AndroidNotificationCategory.reminder,
+    ),
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
+  );
+
+  Future<void> _scheduleTaskAlarm({
+    required int id,
+    required String title,
+    required String body,
+    required int hour,
+    required int minute,
+  }) async {
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: _nextInstanceOfTime(hour, minute),
+      notificationDetails: _taskReminderDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      payload: '/overview',
+      payload: '/messages',
     );
-    await _saveNotificationRecord(title, body);
+    await _storeNotificationDetail(id, title, body, 'task_reminders');
+  }
+
+  Future<void> scheduleTaskReminder({
+    required int id,
+    required String title,
+    required String body,
+    required int hour,
+    required int minute,
+  }) async {
+    await _scheduleTaskAlarm(id: id, title: title, body: body, hour: hour, minute: minute);
   }
 
   Future<void> scheduleSummaryNotification(int hour, int minute) async {
     const summaryId = 999999;
-    await _plugin.cancel(summaryId);
+    await _plugin.cancel(id: summaryId);
 
     final summary = await _calculateTodaysSummary();
 
     await _plugin.zonedSchedule(
-      summaryId,
-      '📋 今日总结',
-      summary,
-      _nextInstanceOfTime(hour, minute),
-      const NotificationDetails(
+      id: summaryId,
+      title: '今日总结',
+      body: summary,
+      scheduledDate: _nextInstanceOfTime(hour, minute),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'daily_summary',
           '每日总结',
@@ -155,10 +307,9 @@ class NotificationService {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      payload: '/overview',
+      payload: '/messages',
     );
-    await _saveNotificationRecord('📋 今日总结', summary);
+    await _storeNotificationDetail(summaryId, '今日总结', summary, 'daily_summary');
   }
 
   Future<String> _calculateTodaysSummary() async {
@@ -205,7 +356,6 @@ class NotificationService {
     }
 
     await _db.saveHistorySummary(today, total, completed, buffer.toString());
-
     return buffer.toString();
   }
 
@@ -213,11 +363,11 @@ class NotificationService {
     if (isZh) {
       if (rate >= 1.0) {
         final msgs = [
-          '太棒了！今天全部完成了！你是效率之王！👑',
+          '太棒了！今天全部完成了！你是效率之王！',
           '完美收官！看看这满屏的勾勾，多么令人满足~',
-          '全垒打！今天没有一项任务能逃过你的魔爪！💪',
-          '满分通关！你这效率，连闪电侠都得甘拜下风！⚡',
-          '任务清空！此刻你比刚出炉的面包还要优秀！🍞',
+          '全垒打！今天没有一项任务能逃过你的魔爪！',
+          '满分通关！你这效率，连闪电侠都得甘拜下风！',
+          '任务清空！此刻你比刚出炉的面包还要优秀！',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate >= 0.8) {
@@ -225,7 +375,7 @@ class NotificationService {
           '非常不错！你已经完成了大部分任务，继续保持！',
           '优秀的表现！就差那么一丁点儿了，明天加油！',
           '八分圆满已经很厉害啦，剩下的留给明天的自己吧~',
-          '差一步美满，但你已经击败了全国80%的用户！🏆',
+          '差一步美满，但你已经击败了全国80%的用户！',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate >= 0.5) {
@@ -233,7 +383,7 @@ class NotificationService {
           '完成了过半的任务，已经是个不错的开始了！',
           '一半已搞定，剩下的也别放弃哦，慢慢来~',
           '进度过半！继续前进，完成的就是赚到的！',
-          '过半啦！就像吃了一半的西瓜，最甜的还在后面！🍉',
+          '过半啦！就像吃了一半的西瓜，最甜的还在后面！',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate > 0) {
@@ -241,7 +391,7 @@ class NotificationService {
           '万里长征第一步，今天已经起跑了，明天会更好！',
           '做一点也是做，比昨天的自己更进步了一点呢~',
           '好的开始是成功的一半，你今天已经成功了一半！',
-          '打破零蛋！每一个完成的勾都是一个小胜利！✌️',
+          '打破零蛋！每一个完成的勾都是一个小胜利！',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else {
@@ -249,17 +399,17 @@ class NotificationService {
           '今天全部未完成？没关系，明天的太阳照常升起！',
           '零完成不丢人，真正的勇士敢于面对空白的todo！',
           '今天是养精蓄锐的一天，明天必定火力全开！',
-          '今日休舱日！休眠是为了更好的爆发，理解的~ 😴',
+          '今日休舱日！休眠是为了更好的爆发，理解的~',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       }
     } else {
       if (rate >= 1.0) {
         final msgs = [
-          'Amazing! All completed! You\'re the productivity king! 👑',
+          'Amazing! All completed! You\'re the productivity king!',
           'Perfect finish! All checkmarks, so satisfying~',
-          'Grand slam! Nothing escaped you today! 💪',
-          'Flawless victory! Even The Flash would envy your speed! ⚡',
+          'Grand slam! Nothing escaped you today!',
+          'Flawless victory! Even The Flash would envy your speed!',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate >= 0.8) {
@@ -267,7 +417,7 @@ class NotificationService {
           'Great job! Most tasks done, keep it up!',
           'Excellent! Just a tiny bit left for tomorrow!',
           '80% is impressive, save some for later~',
-          'Almost there! You\'re in the top tier! 🏆',
+          'Almost there! You\'re in the top tier!',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate >= 0.5) {
@@ -275,7 +425,7 @@ class NotificationService {
           'Halfway there, a solid start!',
           'Half done, don\'t give up, pace yourself~',
           'Over halfway! Every check counts!',
-          'Half a watermelon done, the sweetest half awaits! 🍉',
+          'Half a watermelon done, the sweetest half awaits!',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else if (rate > 0) {
@@ -283,7 +433,7 @@ class NotificationService {
           'First step taken! Tomorrow will be better!',
           'Something is better than nothing, you\'re improving~',
           'A good start is half the battle!',
-          'Broke the zero! Every checkmark is a victory! ✌️',
+          'Broke the zero! Every checkmark is a victory!',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       } else {
@@ -291,7 +441,7 @@ class NotificationService {
           'Nothing done? No worries, the sun rises again!',
           'Zero completions takes courage to face!',
           'Resting today, full power tomorrow!',
-          'Recharge day! Downtime is productive too~ 😴',
+          'Recharge day! Downtime is productive too~',
         ];
         return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
       }
@@ -300,14 +450,16 @@ class NotificationService {
 
   Future<void> scheduleMidnightRefresh() async {
     const refreshId = 999998;
-    await _plugin.cancel(refreshId);
+    await _plugin.cancel(id: refreshId);
 
+    const title = '新的一天';
+    const body = '新的一天开始啦！健康计划已刷新，今天也要加油哦~';
     await _plugin.zonedSchedule(
-      refreshId,
-      '🔄 新的一天',
-      '新的一天开始啦！健康计划已刷新，今天也要加油哦~',
-      _nextInstanceOfTime(0, 0),
-      const NotificationDetails(
+      id: refreshId,
+      title: title,
+      body: body,
+      scheduledDate: _nextInstanceOfTime(0, 0),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'midnight_refresh',
           '每日刷新',
@@ -324,12 +476,12 @@ class NotificationService {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
+    await _storeNotificationDetail(refreshId, title, body, 'midnight_refresh');
   }
 
   Future<void> cancelTaskReminder(int id) async {
-    await _plugin.cancel(id);
+    await _plugin.cancel(id: id);
   }
 
   Future<void> cancelAllReminders() async {
@@ -337,11 +489,58 @@ class NotificationService {
   }
 
   Future<void> cancelSummary() async {
-    await _plugin.cancel(999999);
+    await _plugin.cancel(id: 999999);
   }
 
   Future<void> cancelMidnightRefresh() async {
-    await _plugin.cancel(999998);
+    await _plugin.cancel(id: 999998);
+  }
+
+  Future<void> rescheduleAllReminders() async {
+    final localeCode = await _getLocaleCode();
+    final isZh = _isZh(localeCode);
+
+    final healthItems = await _db.getActiveHealthItems();
+    for (final h in healthItems) {
+      if (h.reminderEnabled && h.id != null) {
+        final parts = h.reminderTime.split(':');
+        if (parts.length == 2) {
+          final hour = int.tryParse(parts[0]) ?? 20;
+          final minute = int.tryParse(parts[1]) ?? 0;
+          await _scheduleTaskAlarm(
+            id: h.id! + 10000,
+            title: isZh ? '健康提醒' : 'Health Reminder',
+            body: isZh
+                ? '该完成「${h.name}」啦！动起来，身体会感谢你的~'
+                : 'Time for "${h.name}"! Your body will thank you~',
+            hour: hour,
+            minute: minute,
+          );
+        }
+      }
+    }
+
+    final today = DateTime.now();
+    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final scheduleItems = await _db.getScheduleItemsForDate(dateStr);
+    for (final s in scheduleItems) {
+      if (s.reminderEnabled && s.id != null) {
+        final parts = s.reminderTime.split(':');
+        if (parts.length == 2) {
+          final hour = int.tryParse(parts[0]) ?? 20;
+          final minute = int.tryParse(parts[1]) ?? 0;
+          await _scheduleTaskAlarm(
+            id: s.id! + 20000,
+            title: isZh ? '日程提醒' : 'Schedule Reminder',
+            body: isZh
+                ? '「${s.name}」到时间啦！别忘记哦~'
+                : '"${s.name}" is up! Don\'t forget~',
+            hour: hour,
+            minute: minute,
+          );
+        }
+      }
+    }
   }
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {

@@ -34,12 +34,6 @@ class OverviewProvider extends ChangeNotifier {
       items = items.where((h) => _healthCompletion[h.id] == true).toList();
     } else if (_completionFilter == 'incomplete') {
       items = items.where((h) => _healthCompletion[h.id] != true).toList();
-    } else {
-      items.sort((a, b) {
-        final aDone = _healthCompletion[a.id] == true ? 1 : 0;
-        final bDone = _healthCompletion[b.id] == true ? 1 : 0;
-        return aDone.compareTo(bDone);
-      });
     }
     return items;
   }
@@ -50,12 +44,6 @@ class OverviewProvider extends ChangeNotifier {
       items = items.where((s) => _scheduleCompletion[s.id] == true).toList();
     } else if (_completionFilter == 'incomplete') {
       items = items.where((s) => _scheduleCompletion[s.id] != true).toList();
-    } else {
-      items.sort((a, b) {
-        final aDone = _scheduleCompletion[a.id] == true ? 1 : 0;
-        final bDone = _scheduleCompletion[b.id] == true ? 1 : 0;
-        return aDone.compareTo(bDone);
-      });
     }
     return items;
   }
@@ -109,14 +97,14 @@ class OverviewProvider extends ChangeNotifier {
     _healthCompletion[itemId] = nowCompleted;
 
     if (nowCompleted) {
-      _notificationService.cancelTaskReminder(itemId + 10000);
+      await _notificationService.cancelTaskReminder(itemId + 10000);
     } else {
       final item = _healthItems.firstWhere((h) => h.id == itemId,
           orElse: () => _healthItems.first);
       if (item.reminderEnabled) {
         final parts = item.reminderTime.split(':');
         if (parts.length == 2) {
-          _notificationService.scheduleTaskReminder(
+          await _notificationService.scheduleTaskReminder(
             id: item.id! + 10000,
             title: '健康提醒',
             body: '该完成「${item.name}」啦！',
@@ -135,14 +123,14 @@ class OverviewProvider extends ChangeNotifier {
     _scheduleCompletion[itemId] = nowCompleted;
 
     if (nowCompleted) {
-      _notificationService.cancelTaskReminder(itemId + 20000);
+      await _notificationService.cancelTaskReminder(itemId + 20000);
     } else {
       final item = _scheduleItems.firstWhere((s) => s.id == itemId,
           orElse: () => _scheduleItems.first);
       if (item.reminderEnabled) {
         final parts = item.reminderTime.split(':');
         if (parts.length == 2) {
-          _notificationService.scheduleTaskReminder(
+          await _notificationService.scheduleTaskReminder(
             id: item.id! + 20000,
             title: '日程提醒',
             body: '「${item.name}」到时间啦！',

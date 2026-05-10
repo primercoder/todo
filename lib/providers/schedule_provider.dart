@@ -50,14 +50,14 @@ class ScheduleProvider extends ChangeNotifier {
     if (newItem.scheduleDate == dateStr) {
       _todayItems.add(newItem);
     }
-    _scheduleReminder(newItem);
+    await _scheduleReminder(newItem);
     notifyListeners();
     return true;
   }
 
   Future<void> updateItem(ScheduleItem item) async {
     await _db.updateScheduleItem(item);
-    _scheduleReminder(item);
+    await _scheduleReminder(item);
     await loadItems();
   }
 
@@ -70,7 +70,7 @@ class ScheduleProvider extends ChangeNotifier {
     if (!updated.isActive) {
       _allItems.removeAt(index);
       _todayItems.removeWhere((i) => i.id == id);
-      _notificationService.cancelTaskReminder(id + 20000);
+      await _notificationService.cancelTaskReminder(id + 20000);
     } else {
       _allItems[index] = updated;
       final today = DateTime.now();
@@ -78,7 +78,7 @@ class ScheduleProvider extends ChangeNotifier {
       if (updated.scheduleDate == dateStr) {
         _todayItems.add(updated);
       }
-      _scheduleReminder(updated);
+      await _scheduleReminder(updated);
     }
     notifyListeners();
   }
@@ -87,7 +87,7 @@ class ScheduleProvider extends ChangeNotifier {
     await _db.deleteScheduleItem(id);
     _allItems.removeWhere((i) => i.id == id);
     _todayItems.removeWhere((i) => i.id == id);
-    _notificationService.cancelTaskReminder(id + 20000);
+    await _notificationService.cancelTaskReminder(id + 20000);
     notifyListeners();
   }
 
@@ -100,18 +100,18 @@ class ScheduleProvider extends ChangeNotifier {
         final isZh = await _isZh;
         final title = isZh ? '📅 日程提醒' : '📅 Schedule Reminder';
         final body = _buildScheduleReminderBody(item.name, item.description, isZh);
-        _notificationService.scheduleTaskReminder(
+        await _notificationService.scheduleTaskReminder(
           id: item.id! + 20000, title: title, body: body,
           hour: hour, minute: minute,
         );
       }
     } else if (item.id != null) {
-      _notificationService.cancelTaskReminder(item.id! + 20000);
+      await _notificationService.cancelTaskReminder(item.id! + 20000);
     }
   }
 
   Future<void> rescheduleReminder(ScheduleItem item) async {
-    _scheduleReminder(item);
+    await _scheduleReminder(item);
   }
 
   String _buildScheduleReminderBody(String name, String description, bool isZh) {

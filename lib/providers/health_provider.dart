@@ -40,7 +40,7 @@ class HealthProvider extends ChangeNotifier {
     _allItems.add(newItem);
     if (newItem.isActive) {
       _activeItems.add(newItem);
-      _scheduleReminder(newItem);
+      await _scheduleReminder(newItem);
     }
     notifyListeners();
     return true;
@@ -48,7 +48,7 @@ class HealthProvider extends ChangeNotifier {
 
   Future<void> updateItem(HealthItem item) async {
     await _db.updateHealthItem(item);
-    _scheduleReminder(item);
+    await _scheduleReminder(item);
     await loadItems();
   }
 
@@ -60,10 +60,10 @@ class HealthProvider extends ChangeNotifier {
     await _db.updateHealthItem(updated);
     if (updated.isActive) {
       _activeItems.add(updated);
-      _scheduleReminder(updated);
+      await _scheduleReminder(updated);
     } else {
       _activeItems.removeWhere((i) => i.id == id);
-      _notificationService.cancelTaskReminder(id + 10000);
+      await _notificationService.cancelTaskReminder(id + 10000);
     }
     _allItems[index] = updated;
     notifyListeners();
@@ -73,7 +73,7 @@ class HealthProvider extends ChangeNotifier {
     await _db.deleteHealthItem(id);
     _allItems.removeWhere((i) => i.id == id);
     _activeItems.removeWhere((i) => i.id == id);
-    _notificationService.cancelTaskReminder(id + 10000);
+    await _notificationService.cancelTaskReminder(id + 10000);
     notifyListeners();
   }
 
@@ -97,18 +97,18 @@ class HealthProvider extends ChangeNotifier {
         final isZh = await _isZh;
         final title = isZh ? '💪 健康提醒' : '💪 Health Reminder';
         final body = _buildHealthReminderBody(item.name, item.defaultValue, isZh);
-        _notificationService.scheduleTaskReminder(
+        await _notificationService.scheduleTaskReminder(
           id: item.id! + 10000, title: title, body: body,
           hour: hour, minute: minute,
         );
       }
     } else if (item.id != null) {
-      _notificationService.cancelTaskReminder(item.id! + 10000);
+      await _notificationService.cancelTaskReminder(item.id! + 10000);
     }
   }
 
   Future<void> rescheduleReminder(HealthItem item) async {
-    _scheduleReminder(item);
+    await _scheduleReminder(item);
   }
 
   String _buildHealthReminderBody(String name, String defaultValue, bool isZh) {

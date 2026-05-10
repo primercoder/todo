@@ -338,6 +338,8 @@ class _SchedulePresetSheet extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(l10n.duplicateSchedule(name, formatDate(today))),
                             behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 1),
+                            margin: const EdgeInsets.only(bottom: 100.0),
                           ));
                         }
                         return;
@@ -351,6 +353,8 @@ class _SchedulePresetSheet extends StatelessWidget {
                       if (context.mounted) Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(l10n.addedToSchedule(name)), behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 1),
+                        margin: const EdgeInsets.only(bottom: 100.0),
                       ));
                     },
                   ),
@@ -469,7 +473,10 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+          margin: const EdgeInsets.only(bottom: 100.0),
+        ),
       );
       return;
     }
@@ -482,6 +489,8 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(l10n.duplicateSchedule(name, dateDisplay)),
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 1),
+        margin: const EdgeInsets.only(bottom: 100.0),
       ));
       return;
     }

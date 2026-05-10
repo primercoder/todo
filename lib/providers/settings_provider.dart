@@ -19,16 +19,6 @@ class SettingsProvider extends ChangeNotifier {
 
   ThemeData get theme => AppTheme.getTheme(_themeName);
 
-  Future<void> loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    _themeName = prefs.getString('theme_name') ?? 'light';
-    _defaultReminderTime = prefs.getString('default_reminder_time') ?? '20:00';
-    _defaultSummaryTime = prefs.getString('default_summary_time') ?? '23:00';
-    _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    _localeCode = prefs.getString('locale_code') ?? 'zh';
-    notifyListeners();
-  }
-
   Future<void> setLocale(String code) async {
     if (_localeCode == code) return;
     _localeCode = code;
@@ -74,6 +64,29 @@ class SettingsProvider extends ChangeNotifier {
     } else {
       NotificationService().cancelAllReminders();
     }
+  }
+
+  bool get notificationsSetupComplete {
+    return _notificationsSetupComplete;
+  }
+  bool _notificationsSetupComplete = false;
+
+  void markNotificationsSetupComplete() {
+    _notificationsSetupComplete = true;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('notifications_setup_complete', true);
+    });
+  }
+
+  Future<void> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _themeName = prefs.getString('theme_name') ?? 'light';
+    _defaultReminderTime = prefs.getString('default_reminder_time') ?? '20:00';
+    _defaultSummaryTime = prefs.getString('default_summary_time') ?? '23:00';
+    _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    _localeCode = prefs.getString('locale_code') ?? 'zh';
+    _notificationsSetupComplete = prefs.getBool('notifications_setup_complete') ?? false;
+    notifyListeners();
   }
 
   Future<Map<String, String>> getSettingsMap() async {

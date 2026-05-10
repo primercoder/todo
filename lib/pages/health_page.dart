@@ -301,6 +301,8 @@ class _PresetPickerSheet extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(l10n.duplicateHealth(name)),
                             behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 1),
+                            margin: const EdgeInsets.only(bottom: 100.0),
                           ));
                         }
                         return;
@@ -314,6 +316,8 @@ class _PresetPickerSheet extends StatelessWidget {
                       if (context.mounted) Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(l10n.addedToHealth(name)), behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 1),
+                        margin: const EdgeInsets.only(bottom: 100.0),
                       ));
                     },
                   ),
@@ -410,7 +414,10 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(l10n.nameRequired), behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+          margin: const EdgeInsets.only(bottom: 100.0),
+        ),
       );
       return;
     }
@@ -419,7 +426,10 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
 
     if (!isEditing && provider.hasDuplicateName(name)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.duplicateHealth(name)), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(l10n.duplicateHealth(name)), behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+          margin: const EdgeInsets.only(bottom: 100.0),
+        ),
       );
       return;
     }

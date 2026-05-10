@@ -3,47 +3,62 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_l10n.dart';
 import '../utils/theme.dart';
-import '../utils/constants.dart';
+import '../services/notification_service.dart';
 
-class NotificationHistoryPage extends StatelessWidget {
+class NotificationHistoryPage extends StatefulWidget {
   const NotificationHistoryPage({super.key});
+
+  @override
+  State<NotificationHistoryPage> createState() => _NotificationHistoryPageState();
+}
+
+class _NotificationHistoryPageState extends State<NotificationHistoryPage> {
+  int? _expandedIndex;
 
   Future<List<Map<String, dynamic>>> _loadNotifications() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('notification_history') ?? '[]';
     try {
       final list = json.decode(raw) as List;
-      return list.cast<Map<String, dynamic>>().reversed.toList();
+      return list.cast<Map<String, dynamic>>();
     } catch (_) {
       return [];
     }
   }
 
-  static Future<void> addNotification(String title, String body) async {
+  Future<void> _clearAll() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('notification_history') ?? '[]';
-    List list;
-    try {
-      list = json.decode(raw) as List;
-    } catch (_) {
-      list = [];
+    await prefs.setString('notification_history', '[]');
+    await NotificationService().clearUnread();
+    setState(() {});
+  }
+
+  String _formatTime(String? isoStr) {
+    if (isoStr == null) return '';
+    final t = DateTime.tryParse(isoStr);
+    if (t == null) return '';
+    final now = DateTime.now();
+    if (t.year == now.year && t.month == now.month && t.day == now.day) {
+      return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
     }
-    list.add({
-      'title': title,
-      'body': body,
-      'time': DateTime.now().toIso8601String(),
-    });
-    if (list.length > 50) list = list.sublist(list.length - 50);
-    await prefs.setString('notification_history', json.encode(list));
+    return '${t.month.toString().padLeft(2, '0')}/${t.day.toString().padLeft(2, '0')} ${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.messageCenter)),
+      appBar: AppBar(
+        title: Text(l10n.messageCenter),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_outlined),
+            onPressed: () => _clearAll(),
+            tooltip: l10n.isZh ? '全部清除' : 'Clear All',
+          ),
+        ],
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _loadNotifications(),
         builder: (context, snapshot) {
@@ -61,25 +76,42 @@ class NotificationHistoryPage extends StatelessWidget {
           }
 
           final notifications = snapshot.data!;
-          return ListView.separated(
+          return ListView.builder(
             itemCount: notifications.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final n = notifications[index];
-              final time = DateTime.tryParse(n['time'] as String? ?? '');
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                  child: Icon(Icons.notifications_outlined, color: AppTheme.primaryColor, size: 20),
+              final title = n['title'] as String? ?? '';
+              final body = n['body'] as String? ?? '';
+              final timeStr = _formatTime(n['time'] as String?);
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(color: Colors.grey[200]!),
                 ),
-                title: Text(n['title'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: ExpansionTile(
+                  initiallyExpanded: _expandedIndex == index,
+                  onExpansionChanged: (expanded) {
+                    setState(() => _expandedIndex = expanded ? index : null);
+                  },
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    child: Icon(Icons.notifications_outlined, color: AppTheme.primaryColor, size: 20),
+                  ),
+                  title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  subtitle: Text(timeStr, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
                   children: [
-                    if (n['body'] != null) Text(n['body'] as String, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    if (time != null) Text(
-                      '${time.year}/${time.month.toString().padLeft(2, '0')}/${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: SelectableText(
+                          body,
+                          style: const TextStyle(fontSize: 13, height: 1.5),
+                        ),
+                      ),
                     ),
                   ],
                 ),
