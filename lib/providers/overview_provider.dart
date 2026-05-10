@@ -32,6 +32,12 @@ class OverviewProvider extends ChangeNotifier {
       items = items.where((h) => _healthCompletion[h.id] == true).toList();
     } else if (_completionFilter == 'incomplete') {
       items = items.where((h) => _healthCompletion[h.id] != true).toList();
+    } else {
+      items.sort((a, b) {
+        final aDone = _healthCompletion[a.id] == true ? 1 : 0;
+        final bDone = _healthCompletion[b.id] == true ? 1 : 0;
+        return aDone.compareTo(bDone);
+      });
     }
     return items;
   }
@@ -42,6 +48,12 @@ class OverviewProvider extends ChangeNotifier {
       items = items.where((s) => _scheduleCompletion[s.id] == true).toList();
     } else if (_completionFilter == 'incomplete') {
       items = items.where((s) => _scheduleCompletion[s.id] != true).toList();
+    } else {
+      items.sort((a, b) {
+        final aDone = _scheduleCompletion[a.id] == true ? 1 : 0;
+        final bDone = _scheduleCompletion[b.id] == true ? 1 : 0;
+        return aDone.compareTo(bDone);
+      });
     }
     return items;
   }
