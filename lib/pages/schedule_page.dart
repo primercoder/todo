@@ -131,11 +131,10 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _showItemEditor(),
-        icon: const Icon(Icons.add),
-        label: const Text('添加日程'),
         backgroundColor: AppTheme.scheduleColor,
+        child: const Icon(Icons.add),
       ),
     );
   }

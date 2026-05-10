@@ -188,7 +188,12 @@ class DatabaseHelper {
 
   Future<List<ScheduleItem>> getAllScheduleItems() async {
     final db = await database;
-    final maps = await db.query('schedule_items', orderBy: 'schedule_date DESC, created_at ASC');
+    final maps = await db.query(
+      'schedule_items',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'schedule_date DESC, created_at ASC',
+    );
     return maps.map((m) => ScheduleItem.fromMap(m)).toList();
   }
 

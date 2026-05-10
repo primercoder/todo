@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/schedule_item.dart';
 import '../database/database_helper.dart';
+import '../services/notification_service.dart';
 
 class ScheduleProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper();
+  final NotificationService _notificationService = NotificationService();
   List<ScheduleItem> _allItems = [];
   List<ScheduleItem> _todayItems = [];
   bool _isLoading = false;
@@ -11,6 +14,11 @@ class ScheduleProvider extends ChangeNotifier {
   List<ScheduleItem> get allItems => _allItems;
   List<ScheduleItem> get todayItems => _todayItems;
   bool get isLoading => _isLoading;
+
+  Future<bool> get _isZh async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getString('locale_code') ?? 'zh') == 'zh';
+  }
 
   Future<void> loadItems() async {
     _isLoading = true;
@@ -38,11 +46,13 @@ class ScheduleProvider extends ChangeNotifier {
     if (newItem.scheduleDate == dateStr) {
       _todayItems.add(newItem);
     }
+    _scheduleReminder(newItem);
     notifyListeners();
   }
 
   Future<void> updateItem(ScheduleItem item) async {
     await _db.updateScheduleItem(item);
+    _scheduleReminder(item);
     await loadItems();
   }
 
@@ -54,15 +64,18 @@ class ScheduleProvider extends ChangeNotifier {
     final updated = item.copyWith(isActive: !item.isActive);
     await _db.updateScheduleItem(updated);
 
-    _allItems[index] = updated;
-    if (updated.isActive) {
+    if (!updated.isActive) {
+      _allItems.removeAt(index);
+      _todayItems.removeWhere((i) => i.id == id);
+      _notificationService.cancelTaskReminder(id + 20000);
+    } else {
+      _allItems[index] = updated;
       final today = DateTime.now();
       final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
       if (updated.scheduleDate == dateStr) {
         _todayItems.add(updated);
       }
-    } else {
-      _todayItems.removeWhere((i) => i.id == id);
+      _scheduleReminder(updated);
     }
     notifyListeners();
   }
@@ -71,6 +84,50 @@ class ScheduleProvider extends ChangeNotifier {
     await _db.deleteScheduleItem(id);
     _allItems.removeWhere((i) => i.id == id);
     _todayItems.removeWhere((i) => i.id == id);
+    _notificationService.cancelTaskReminder(id + 20000);
     notifyListeners();
+  }
+
+  Future<void> _scheduleReminder(ScheduleItem item) async {
+    if (item.reminderEnabled && item.id != null) {
+      final timeParts = item.reminderTime.split(':');
+      if (timeParts.length == 2) {
+        final hour = int.tryParse(timeParts[0]) ?? 20;
+        final minute = int.tryParse(timeParts[1]) ?? 0;
+        final isZh = await _isZh;
+        final title = isZh ? '📅 日程提醒' : '📅 Schedule Reminder';
+        final body = _buildScheduleReminderBody(item.name, item.description, isZh);
+        _notificationService.scheduleTaskReminder(
+          id: item.id! + 20000,
+          title: title,
+          body: body,
+          hour: hour,
+          minute: minute,
+        );
+      }
+    } else if (item.id != null) {
+      _notificationService.cancelTaskReminder(item.id! + 20000);
+    }
+  }
+
+  String _buildScheduleReminderBody(String name, String description, bool isZh) {
+    if (isZh) {
+      final msgs = [
+        '「$name」到时间啦！${description.isNotEmpty ? description : "别忘记哦~"} 📚',
+        '该开始「$name」了！${description.isNotEmpty ? description : "拖延是最大的时间小偷哦~"} ⏰',
+        '「$name」提醒！${description.isNotEmpty ? description : "完成任务的感觉超棒的！"} 🎯',
+        '「$name」的时刻到了！${description.isNotEmpty ? description : "今天进步一点点~"} 🚀',
+        '嘿嘿，「$name」该上线了！${description.isNotEmpty ? description : "干完这一票你就是最靓的仔！"} 😎',
+      ];
+      return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
+    }
+    final msgs = [
+      '"$name" is up! ${description.isNotEmpty ? description : "Don\'t forget~"} 📚',
+      'Time for "$name"! ${description.isNotEmpty ? description : "Procrastination is the thief of time~"} ⏰',
+      '"$name" reminder! ${description.isNotEmpty ? description : "Completing tasks feels great!"} 🎯',
+      '"$name" time! ${description.isNotEmpty ? description : "One step forward today~"} 🚀',
+      'Hey, "$name" is calling! ${description.isNotEmpty ? description : "Let\'s crush this one!"} 😎',
+    ];
+    return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
   }
 }

@@ -350,6 +350,36 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
             const SizedBox(height: 16),
 
+            // Language
+            _buildSectionHeader('🌐 语言 / Language'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.language),
+                      title: const Text('简体中文'),
+                      trailing: settings.localeCode == 'zh'
+                          ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                          : null,
+                      onTap: () => settings.setLocale('zh'),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.language),
+                      title: const Text('English'),
+                      trailing: settings.localeCode == 'en'
+                          ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                          : null,
+                      onTap: () => settings.setLocale('en'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Help
             _buildSectionHeader('ℹ️ 其他'),
             Padding(

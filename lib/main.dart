@@ -10,6 +10,7 @@ import 'pages/health_page.dart';
 import 'pages/schedule_page.dart';
 import 'pages/settings_page.dart';
 import 'utils/theme.dart';
+import 'utils/app_l10n.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -54,6 +55,11 @@ class TodoApp extends StatelessWidget {
             title: 'TODO',
             debugShowCheckedModeBanner: false,
             navigatorKey: navigatorKey,
+            locale: settings.locale,
+            supportedLocales: const [Locale('zh'), Locale('en')],
+            localizationsDelegates: const [
+              AppLocalizationDelegate(),
+            ],
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: settings.themeName == 'dark'
@@ -98,6 +104,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = context.read<SettingsProvider>();
+      if (settings.notificationsEnabled) {
+        final st = settings.defaultSummaryTime.split(':');
+        if (st.length == 2) {
+          _notificationService.scheduleSummaryNotification(
+            int.tryParse(st[0]) ?? 23,
+            int.tryParse(st[1]) ?? 0,
+          );
+        }
+        _notificationService.scheduleMidnightRefresh();
+      }
+    });
   }
 
   Future<void> _requestPermissions() async {
@@ -122,6 +141,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final theme = settings.theme;
+    final l10n = AppL10n.of(context);
 
     return Theme(
       data: theme,
@@ -137,26 +157,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           onTap: (index) {
             setState(() => _currentIndex = index);
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: '概览',
+              icon: const Icon(Icons.dashboard_outlined),
+              activeIcon: const Icon(Icons.dashboard),
+              label: l10n.overview,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_border),
-              activeIcon: Icon(Icons.favorite),
-              label: '健康',
+              icon: const Icon(Icons.favorite_border),
+              activeIcon: const Icon(Icons.favorite),
+              label: l10n.health,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month_outlined),
-              activeIcon: Icon(Icons.calendar_month),
-              label: '日程',
+              icon: const Icon(Icons.calendar_month_outlined),
+              activeIcon: const Icon(Icons.calendar_month),
+              label: l10n.schedule,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: '设置',
+              icon: const Icon(Icons.settings_outlined),
+              activeIcon: const Icon(Icons.settings),
+              label: l10n.settings,
             ),
           ],
         ),

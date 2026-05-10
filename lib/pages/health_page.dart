@@ -143,11 +143,10 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _showItemEditor(),
-        icon: const Icon(Icons.add),
-        label: const Text('添加计划'),
         backgroundColor: AppTheme.healthColor,
+        child: const Icon(Icons.add),
       ),
     );
   }
