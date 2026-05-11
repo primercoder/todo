@@ -381,8 +381,9 @@ class NotificationService {
                 );
 
                 recorded.add(key);
-                if (recorded.length > 500)
+                if (recorded.length > 500) {
                   recorded.removeRange(0, recorded.length - 500);
+                }
                 await prefs.setStringList('recorded_notifications', recorded);
 
                 final count = (prefs.getInt('notification_unread') ?? 0) + 1;

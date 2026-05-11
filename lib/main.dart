@@ -235,8 +235,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     );
                   } catch (_) {}
                 },
-                child: const Icon(Icons.bug_report),
                 tooltip: 'Send debug notification',
+                child: const Icon(Icons.bug_report),
+                
               )
             : null,
       ),
