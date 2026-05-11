@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -28,10 +29,12 @@ void main() async {
   final settingsProvider = SettingsProvider();
   await settingsProvider.loadSettings();
 
-  runApp(TodoApp(
-    settingsProvider: settingsProvider,
-    notificationService: notificationService,
-  ));
+  runApp(
+    TodoApp(
+      settingsProvider: settingsProvider,
+      notificationService: notificationService,
+    ),
+  );
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     notificationService.processPendingNotification();
@@ -132,7 +135,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             final st = settings.defaultSummaryTime.split(':');
             if (st.length == 2) {
               _notificationService.scheduleSummaryNotification(
-                int.tryParse(st[0]) ?? 23, int.tryParse(st[1]) ?? 0,
+                int.tryParse(st[0]) ?? 23,
+                int.tryParse(st[1]) ?? 0,
               );
             }
             _notificationService.scheduleMidnightRefresh();
@@ -220,6 +224,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
           ],
         ),
+        floatingActionButton: kDebugMode
+            ? FloatingActionButton(
+                heroTag: 'debugNotif',
+                onPressed: () async {
+                  try {
+                    await _notificationService.showImmediateNotification(
+                      title: 'Debug Notification',
+                      body: 'This is a test local notification',
+                    );
+                  } catch (_) {}
+                },
+                child: const Icon(Icons.bug_report),
+                tooltip: 'Send debug notification',
+              )
+            : null,
       ),
     );
   }

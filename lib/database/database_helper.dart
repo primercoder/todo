@@ -169,7 +169,11 @@ class DatabaseHelper {
 
   Future<int> deleteHealthItem(int id) async {
     final db = await database;
-    await db.delete('daily_records', where: 'item_type = ? AND item_id = ?', whereArgs: ['health', id]);
+    await db.delete(
+      'daily_records',
+      where: 'item_type = ? AND item_id = ?',
+      whereArgs: ['health', id],
+    );
     return await db.delete('health_items', where: 'id = ?', whereArgs: [id]);
   }
 
@@ -214,13 +218,21 @@ class DatabaseHelper {
 
   Future<int> deleteScheduleItem(int id) async {
     final db = await database;
-    await db.delete('daily_records', where: 'item_type = ? AND item_id = ?', whereArgs: ['schedule', id]);
+    await db.delete(
+      'daily_records',
+      where: 'item_type = ? AND item_id = ?',
+      whereArgs: ['schedule', id],
+    );
     return await db.delete('schedule_items', where: 'id = ?', whereArgs: [id]);
   }
 
   // ---- Daily Records ----
 
-  Future<DailyRecord?> getDailyRecord(String date, String itemType, int itemId) async {
+  Future<DailyRecord?> getDailyRecord(
+    String date,
+    String itemType,
+    int itemId,
+  ) async {
     final db = await database;
     final maps = await db.query(
       'daily_records',
@@ -232,11 +244,19 @@ class DatabaseHelper {
 
   Future<List<DailyRecord>> getDailyRecordsForDate(String date) async {
     final db = await database;
-    final maps = await db.query('daily_records', where: 'date = ?', whereArgs: [date]);
+    final maps = await db.query(
+      'daily_records',
+      where: 'date = ?',
+      whereArgs: [date],
+    );
     return maps.map((m) => DailyRecord.fromMap(m)).toList();
   }
 
-  Future<void> toggleCompletion(String date, String itemType, int itemId) async {
+  Future<void> toggleCompletion(
+    String date,
+    String itemType,
+    int itemId,
+  ) async {
     final db = await database;
     final existing = await getDailyRecord(date, itemType, itemId);
     if (existing != null) {
@@ -244,7 +264,9 @@ class DatabaseHelper {
         'daily_records',
         {
           'completed': existing.completed ? 0 : 1,
-          'completed_at': existing.completed ? null : DateTime.now().toIso8601String(),
+          'completed_at': existing.completed
+              ? null
+              : DateTime.now().toIso8601String(),
         },
         where: 'id = ?',
         whereArgs: [existing.id],
@@ -292,7 +314,11 @@ class DatabaseHelper {
 
   Future<Map<String, dynamic>?> getHistorySummary(String date) async {
     final db = await database;
-    final maps = await db.query('history_summaries', where: 'date = ?', whereArgs: [date]);
+    final maps = await db.query(
+      'history_summaries',
+      where: 'date = ?',
+      whereArgs: [date],
+    );
     return maps.isNotEmpty ? maps.first : null;
   }
 
@@ -301,19 +327,20 @@ class DatabaseHelper {
     return await db.query('history_summaries', orderBy: 'date DESC');
   }
 
-  Future<void> saveHistorySummary(String date, int totalCount, int completedCount, String summaryText) async {
+  Future<void> saveHistorySummary(
+    String date,
+    int totalCount,
+    int completedCount,
+    String summaryText,
+  ) async {
     final db = await database;
-    await db.insert(
-      'history_summaries',
-      {
-        'date': date,
-        'total_count': totalCount,
-        'completed_count': completedCount,
-        'summary_text': summaryText,
-        'created_at': DateTime.now().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('history_summaries', {
+      'date': date,
+      'total_count': totalCount,
+      'completed_count': completedCount,
+      'summary_text': summaryText,
+      'created_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // ---- Export / Import ----
@@ -332,7 +359,11 @@ class DatabaseHelper {
     final db = await database;
     for (final item in items) {
       item.remove('id');
-      await db.insert('health_items', item, conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.insert(
+        'health_items',
+        item,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
     }
   }
 
@@ -340,7 +371,11 @@ class DatabaseHelper {
     final db = await database;
     for (final item in items) {
       item.remove('id');
-      await db.insert('schedule_items', item, conflictAlgorithm: ConflictAlgorithm.ignore);
+      await db.insert(
+        'schedule_items',
+        item,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
     }
   }
 }

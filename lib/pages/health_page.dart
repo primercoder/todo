@@ -101,11 +101,21 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.fitness_center, size: 64, color: Colors.grey[300]),
+                    Icon(
+                      Icons.fitness_center,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
                     const SizedBox(height: 16),
-                    Text(l10n2.noHealthPlan, style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                    Text(
+                      l10n2.noHealthPlan,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 16),
+                    ),
                     const SizedBox(height: 8),
-                    Text(l10n2.addHealthHint, style: TextStyle(color: Colors.grey[400])),
+                    Text(
+                      l10n2.addHealthHint,
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
                   ],
                 ),
               ),
@@ -122,7 +132,9 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
-                    final double animValue = Curves.easeInOut.transform(animation.value);
+                    final double animValue = Curves.easeInOut.transform(
+                      animation.value,
+                    );
                     final elevation = ui.lerpDouble(0, 6, animValue)!;
                     final scale = ui.lerpDouble(1, 1.03, animValue)!;
                     return Transform.scale(
@@ -153,7 +165,11 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHealthCard(BuildContext context, HealthItem item, ThemeData theme) {
+  Widget _buildHealthCard(
+    BuildContext context,
+    HealthItem item,
+    ThemeData theme,
+  ) {
     return Card(
       key: ValueKey(item.id),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -173,22 +189,32 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
         ),
         title: Text(
           item.name,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (item.defaultValue.isNotEmpty || item.description.isNotEmpty)
               Text(
-                item.defaultValue.isNotEmpty ? '建议: ${item.defaultValue}' : item.description,
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                item.defaultValue.isNotEmpty
+                    ? '建议: ${item.defaultValue}'
+                    : item.description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             if (item.reminderEnabled)
               Row(
                 children: [
-                  Icon(Icons.notifications_active, size: 12, color: AppTheme.accentColor),
+                  Icon(
+                    Icons.notifications_active,
+                    size: 12,
+                    color: AppTheme.accentColor,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     item.reminderTime,
@@ -226,7 +252,10 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
         title: Text(l10n.deleteTitle),
         content: Text(l10n.confirmDeleteHealth(item.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
           TextButton(
             onPressed: () {
               context.read<HealthProvider>().deleteItem(item.id!);
@@ -241,15 +270,24 @@ class _HealthPageState extends State<HealthPage> with TickerProviderStateMixin {
 
   IconData _getHealthIcon(String iconName) {
     switch (iconName) {
-      case 'water_drop': return Icons.water_drop;
-      case 'directions_run': return Icons.directions_run;
-      case 'visibility': return Icons.visibility;
-      case 'self_improvement': return Icons.self_improvement;
-      case 'meditation': return Icons.self_improvement;
-      case 'bedtime': return Icons.bedtime;
-      case 'eco': return Icons.eco;
-      case 'directions_walk': return Icons.directions_walk;
-      default: return Icons.favorite;
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'directions_run':
+        return Icons.directions_run;
+      case 'visibility':
+        return Icons.visibility;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'meditation':
+        return Icons.self_improvement;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'eco':
+        return Icons.eco;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      default:
+        return Icons.favorite;
     }
   }
 }
@@ -269,14 +307,27 @@ class _PresetPickerSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          Text(l10n.presetHealthTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            l10n.presetHealthTitle,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(l10n.presetHealthDesc, style: TextStyle(color: Colors.grey[500])),
+          Text(
+            l10n.presetHealthDesc,
+            style: TextStyle(color: Colors.grey[500]),
+          ),
           const SizedBox(height: 16),
           Flexible(
             child: ListView.builder(
@@ -287,28 +338,55 @@ class _PresetPickerSheet extends StatelessWidget {
                 return ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppTheme.healthColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                    child: Icon(_getPresetIcon(item['icon']!), color: AppTheme.healthColor, size: 22),
+                    decoration: BoxDecoration(
+                      color: AppTheme.healthColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      _getPresetIcon(item['icon']!),
+                      color: AppTheme.healthColor,
+                      size: 22,
+                    ),
                   ),
-                  title: Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(item['description']!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  title: Text(
+                    item['name']!,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    item['description']!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: IconButton(
-                    icon: Icon(Icons.add_circle_outline, color: AppTheme.healthColor),
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      color: AppTheme.healthColor,
+                    ),
                     onPressed: () async {
                       final provider = context.read<HealthProvider>();
                       final name = item['name']!;
                       if (provider.hasDuplicateName(name)) {
-                        ToastOverlay.show(l10n.duplicateHealth(name));
+                        ToastOverlay.show(
+                          l10n.duplicateHealth(name),
+                          duration: const Duration(seconds: 1),
+                        );
                         return;
                       }
                       final newItem = HealthItem(
-                        name: name, icon: item['icon']!, category: 'preset',
-                        description: item['description']!, defaultValue: item['defaultValue'] ?? '',
-                        isActive: true, sortOrder: provider.activeItems.length,
+                        name: name,
+                        icon: item['icon']!,
+                        category: 'preset',
+                        description: item['description']!,
+                        defaultValue: item['defaultValue'] ?? '',
+                        isActive: true,
+                        sortOrder: provider.activeItems.length,
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ToastOverlay.show(l10n.addedToHealth(name));
+                      ToastOverlay.show(
+                        l10n.addedToHealth(name),
+                        duration: const Duration(seconds: 1),
+                      );
                     },
                   ),
                 );
@@ -322,15 +400,24 @@ class _PresetPickerSheet extends StatelessWidget {
 
   IconData _getPresetIcon(String iconName) {
     switch (iconName) {
-      case 'water_drop': return Icons.water_drop;
-      case 'directions_run': return Icons.directions_run;
-      case 'visibility': return Icons.visibility;
-      case 'self_improvement': return Icons.self_improvement;
-      case 'meditation': return Icons.self_improvement;
-      case 'bedtime': return Icons.bedtime;
-      case 'eco': return Icons.eco;
-      case 'directions_walk': return Icons.directions_walk;
-      default: return Icons.favorite;
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'directions_run':
+        return Icons.directions_run;
+      case 'visibility':
+        return Icons.visibility;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'meditation':
+        return Icons.self_improvement;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'eco':
+        return Icons.eco;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      default:
+        return Icons.favorite;
     }
   }
 }
@@ -359,7 +446,9 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.item?.name ?? '');
     _notesCtrl = TextEditingController(text: widget.item?.notes ?? '');
-    _defaultValueCtrl = TextEditingController(text: widget.item?.defaultValue ?? '');
+    _defaultValueCtrl = TextEditingController(
+      text: widget.item?.defaultValue ?? '',
+    );
 
     final settings = context.read<SettingsProvider>();
     final defaultTime = widget.item != null
@@ -373,7 +462,10 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
   TimeOfDay _parseTime(String timeStr) {
     final parts = timeStr.split(':');
     if (parts.length == 2) {
-      return TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
+      return TimeOfDay(
+        hour: int.tryParse(parts[0]) ?? 20,
+        minute: int.tryParse(parts[1]) ?? 0,
+      );
     }
     return const TimeOfDay(hour: 20, minute: 0);
   }
@@ -403,18 +495,25 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
     final l10n = AppL10n.of(context);
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      ToastOverlay.show(l10n.nameRequired);
+      ToastOverlay.show(
+        l10n.nameRequired,
+        duration: const Duration(seconds: 1),
+      );
       return;
     }
 
     final provider = context.read<HealthProvider>();
 
     if (!isEditing && provider.hasDuplicateName(name)) {
-      ToastOverlay.show(l10n.duplicateHealth(name));
+      ToastOverlay.show(
+        l10n.duplicateHealth(name),
+        duration: const Duration(seconds: 1),
+      );
       return;
     }
 
-    final timeStr = '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}';
 
     final item = HealthItem(
       id: widget.item?.id,
@@ -447,7 +546,9 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
 
     return Container(
       padding: EdgeInsets.only(
-        left: 20, right: 20, top: 20,
+        left: 20,
+        right: 20,
+        top: 20,
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: SingleChildScrollView(
@@ -455,13 +556,22 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-            )),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             Text(
               isEditing ? l10n.editHealth : l10n.addNewHealth,
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
             TextField(
@@ -469,7 +579,9 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.itemName,
                 hintText: l10n.itemNameHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.edit),
               ),
             ),
@@ -479,7 +591,9 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.suggestedValueLabel,
                 hintText: l10n.suggestedValueHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.trending_up),
               ),
             ),
@@ -490,7 +604,9 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.notesLabel,
                 hintText: l10n.notesHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.note),
               ),
             ),
@@ -501,7 +617,8 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
               subtitle: _reminderEnabled
                   ? Text(
                       '${l10n.reminderTimeLabel}: ${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
-                      style: TextStyle(color: AppTheme.accentColor))
+                      style: TextStyle(color: AppTheme.accentColor),
+                    )
                   : Text(l10n.reminderOffDesc),
               value: _reminderEnabled,
               activeTrackColor: AppTheme.healthColor,
@@ -513,10 +630,17 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
                 child: OutlinedButton.icon(
                   onPressed: _pickTime,
                   icon: const Icon(Icons.access_time),
-                  label: Text('${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}'),
+                  label: Text(
+                    '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
+                  ),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -529,9 +653,14 @@ class _HealthItemEditorState extends State<_HealthItemEditor> {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppTheme.healthColor,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Text(isEditing ? l10n.save : l10n.add, style: const TextStyle(fontSize: 16)),
+                child: Text(
+                  isEditing ? l10n.save : l10n.add,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

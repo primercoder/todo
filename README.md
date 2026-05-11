@@ -1,6 +1,6 @@
 # TODO App
 
-一款面向 Android 14+ 的健康习惯培养与日程管理应用。帮助用户养成良好健康习惯，同时提供灵活的日程管理功能。
+一款面向 Android 14+ 的健康习惯培养与日程管理应用。
 
 ## 功能特性
 
@@ -39,16 +39,6 @@
 - 零点自动刷新通知
 - 后台运行，即使 App 未打开也能推送
 
-## 技术栈
-
-| 技术 | 说明 |
-|------|------|
-| Flutter 3.38+ | 跨平台框架 |
-| Provider | 状态管理 |
-| SQLite (sqflite) | 本地数据库 |
-| flutter_local_notifications | 通知推送 |
-| SharedPreferences | 轻量配置存储 |
-
 ## 构建要求
 
 - Flutter SDK 3.38+
@@ -62,7 +52,7 @@
 # 安装依赖
 flutter pub get
 
-# 设置 Java 版本（重要！JDK 25 与 Gradle 8.14 不兼容）
+# 设置 Java 版本（JDK 25 与 Gradle 8.14 不兼容）
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # 构建 APK
@@ -72,33 +62,10 @@ flutter build apk --debug
 flutter build apk --release
 ```
 
-## 项目结构
-
-```
-lib/
-├── main.dart                    # 应用入口
-├── database/
-│   └── database_helper.dart     # 数据库操作
-├── models/                      # 数据模型
-├── providers/                   # 状态管理
-├── services/
-│   └── notification_service.dart # 通知服务
-├── pages/                       # 页面
-├── widgets/                     # 组件
-└── utils/                       # 工具函数
-```
-
-## 开发说明
-
-- 预设健康项目和日程项目在 `lib/utils/constants.dart` 中定义
-- 数据库在首次启动时自动创建并填充预设数据
-- 主题定义在 `lib/utils/theme.dart`
-- 通知系统使用 `flutter_local_notifications` 的 zonedSchedule 实现定时推送
-
 ## 图标
 
 App 图标使用 [历钟图标 by paomedia (Arnaud)](
-https://icon-icons.com/zh/authors/143-paomedia-arnaud) on 
+https://icon-icons.com/zh/authors/143-paomedia-arnaud) on
 [Icon-Icons.com](https://icon-icons.com/zh/)
 
 ## License

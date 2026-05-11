@@ -36,7 +36,12 @@ void main() {
     tz.TZDateTime nextInstanceOfTime(int hour, int minute) {
       final now = tz.TZDateTime.now(tz.local);
       tz.TZDateTime scheduledDate = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, hour, minute,
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
       );
       if (scheduledDate.isBefore(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -78,8 +83,11 @@ void main() {
       final now = tz.TZDateTime.now(tz.local);
       for (final h in [0, 8, 14, 20, 23]) {
         final result = nextInstanceOfTime(h, 30);
-        expect(result.isAfter(now), isTrue,
-            reason: '$h:30 should be in the future');
+        expect(
+          result.isAfter(now),
+          isTrue,
+          reason: '$h:30 should be in the future',
+        );
       }
     });
 
@@ -194,7 +202,8 @@ void main() {
   group('Time format helpers', () {
     test('todayDate returns YYYY-MM-DD', () {
       final now = DateTime.now();
-      final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final dateStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       expect(dateStr.length, 10);
       expect(dateStr.contains('-'), isTrue);
     });

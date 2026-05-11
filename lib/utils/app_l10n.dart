@@ -31,7 +31,8 @@ class AppL10n {
   String get recentWeek => isZh ? '📊 最近一周' : '📊 Recent Week';
   String get noHistory => isZh ? '暂无历史记录' : 'No history yet';
   String get noTasks => isZh ? '今天还没有待办事项哦' : 'No tasks for today';
-  String get addFromTabs => isZh ? '去「健康」或「日程」页添加吧~' : 'Go to Health or Schedule to add some~';
+  String get addFromTabs =>
+      isZh ? '去「健康」或「日程」页添加吧~' : 'Go to Health or Schedule to add some~';
   String get filter => isZh ? '筛选' : 'Filter';
   String get historyLabel => isZh ? '历史记录' : 'History';
   String get selectDate => isZh ? '选择查看日期' : 'Select date';
@@ -51,25 +52,31 @@ class AppL10n {
   // Health page
   String get healthTitle => isZh ? '健康计划' : 'Health Plan';
   String get noHealthPlan => isZh ? '还没有健康计划' : 'No health plans yet';
-  String get addHealthHint => isZh ? '点击右下角「+」或右上角灯泡添加吧~' : 'Tap + or the bulb icon to add~';
+  String get addHealthHint =>
+      isZh ? '点击右下角「+」或右上角灯泡添加吧~' : 'Tap + or the bulb icon to add~';
   String get presetHealthTitle => isZh ? '📋 参考健康项目' : '📋 Health Templates';
-  String get presetHealthDesc => isZh ? '点击添加推荐的健康习惯' : 'Tap to add recommended habits';
+  String get presetHealthDesc =>
+      isZh ? '点击添加推荐的健康习惯' : 'Tap to add recommended habits';
   String get editHealth => isZh ? '编辑健康计划' : 'Edit Health Plan';
   String get addNewHealth => isZh ? '添加健康计划' : 'Add Health Plan';
   String get itemName => isZh ? '项目名称' : 'Name';
   String get itemNameHint => isZh ? '例如：每天喝8杯水' : 'e.g. Drink 8 cups of water';
-  String get suggestedValueHint => isZh ? '例如：2000ml / 5公里' : 'e.g. 2000ml / 5km';
+  String get suggestedValueHint =>
+      isZh ? '例如：2000ml / 5公里' : 'e.g. 2000ml / 5km';
   String get notesHint => isZh ? '给自己留个小贴士吧~' : 'Leave a note for yourself~';
   String get enableReminder => isZh ? '开启提醒' : 'Enable Reminder';
   String reminderDesc(String time) => isZh ? '提醒时间: $time' : 'Reminder: $time';
-  String get reminderOffDesc => isZh ? '在设定时间发送通知提醒你' : 'Send notification at set time';
+  String get reminderOffDesc =>
+      isZh ? '在设定时间发送通知提醒你' : 'Send notification at set time';
   String get save => isZh ? '保存修改' : 'Save Changes';
   String get add => isZh ? '添加计划' : 'Add Plan';
   String get delete => isZh ? '删除' : 'Delete';
   String get edit => isZh ? '编辑' : 'Edit';
   String get nameRequired => isZh ? '名称不能为空哦~' : 'Name cannot be empty~';
-  String duplicateHealth(String name) => isZh ? '「$name」已经存在，请勿重复添加~' : '"$name" already exists!';
-  String addedToHealth(String name) => isZh ? '「$name」已添加到健康计划' : '"$name" added to health plan';
+  String duplicateHealth(String name) =>
+      isZh ? '「$name」已经存在，请勿重复添加~' : '"$name" already exists!';
+  String addedToHealth(String name) =>
+      isZh ? '「$name」已添加到健康计划' : '"$name" added to health plan';
   String confirmDeleteHealth(String name) => isZh
       ? '确定要删除「$name」吗？\n相关的历史记录也会被删除哦~'
       : 'Delete "$name"?\nRelated history will also be removed~';
@@ -78,19 +85,22 @@ class AppL10n {
   // Schedule page
   String get scheduleTitle => isZh ? '日程安排' : 'Schedule';
   String get noSchedule => isZh ? '还没有日程安排' : 'No schedules yet';
-  String get addScheduleHint => isZh ? '点击右下角「+」或右上角灯泡添加吧~' : 'Tap + or the bulb icon to add~';
+  String get addScheduleHint =>
+      isZh ? '点击右下角「+」或右上角灯泡添加吧~' : 'Tap + or the bulb icon to add~';
   String get presetScheduleTitle => isZh ? '📚 学习日程参考' : '📚 Study Templates';
-  String get presetScheduleDesc => isZh ? '点击添加推荐的日程安排' : 'Tap to add recommended schedules';
+  String get presetScheduleDesc =>
+      isZh ? '点击添加推荐的日程安排' : 'Tap to add recommended schedules';
   String get editSchedule => isZh ? '编辑日程' : 'Edit Schedule';
   String get addNewSchedule => isZh ? '添加日程' : 'Add Schedule';
   String get scheduleName => isZh ? '日程名称' : 'Schedule Name';
   String get scheduleNameHint => isZh ? '例如：背50个单词' : 'e.g. Memorize 50 words';
-  String get descriptionHint => isZh ? '简要说明这个日程要做什么' : 'Brief description of this schedule';
+  String get descriptionHint =>
+      isZh ? '简要说明这个日程要做什么' : 'Brief description of this schedule';
   String get changeDate => isZh ? '更改' : 'Change';
-  String duplicateSchedule(String name, String date) => isZh
-      ? '「$name」在$date已存在，请勿重复添加~'
-      : '"$name" already exists on $date!';
-  String addedToSchedule(String name) => isZh ? '「$name」已添加到今日日程' : '"$name" added to today';
+  String duplicateSchedule(String name, String date) =>
+      isZh ? '「$name」在$date已存在，请勿重复添加~' : '"$name" already exists on $date!';
+  String addedToSchedule(String name) =>
+      isZh ? '「$name」已添加到今日日程' : '"$name" added to today';
   String confirmDeleteSchedule(String name) => isZh
       ? '确定要删除「$name」日程吗？\n相关记录也会被删除哦~'
       : 'Delete "$name"?\nRelated records will also be removed~';
@@ -106,14 +116,19 @@ class AppL10n {
   String get sunsetTheme => isZh ? '日落' : 'Sunset';
   String get notificationSection => isZh ? '🔔 提醒设置' : '🔔 Notifications';
   String get notificationToggle => isZh ? '启用通知' : 'Enable Notifications';
-  String get notificationOffDesc => isZh ? '关闭后所有提醒和总结将不会发送' : 'Disable all reminders and summaries';
-  String get defaultReminderTimeLabel => isZh ? '默认提醒时间' : 'Default Reminder Time';
-  String get defaultReminderDesc => isZh ? '新项目的默认提醒时间' : 'Default time for new items';
+  String get notificationOffDesc =>
+      isZh ? '关闭后所有提醒和总结将不会发送' : 'Disable all reminders and summaries';
+  String get defaultReminderTimeLabel =>
+      isZh ? '默认提醒时间' : 'Default Reminder Time';
+  String get defaultReminderDesc =>
+      isZh ? '新项目的默认提醒时间' : 'Default time for new items';
   String get summaryTimeLabel => isZh ? '每日总结时间' : 'Daily Summary Time';
-  String get summaryDesc => isZh ? '每天此时发送完成情况总结' : 'Send daily summary at this time';
+  String get summaryDesc =>
+      isZh ? '每天此时发送完成情况总结' : 'Send daily summary at this time';
   String get dataSection => isZh ? '💾 数据管理' : '💾 Data';
   String get exportDataLabel => isZh ? '导出数据' : 'Export Data';
-  String get exportDesc => isZh ? '将健康计划和日程导出为JSON文件' : 'Export plans as JSON file';
+  String get exportDesc =>
+      isZh ? '将健康计划和日程导出为JSON文件' : 'Export plans as JSON file';
   String get importDataLabel => isZh ? '导入数据' : 'Import Data';
   String get importDesc => isZh ? '从备份文件恢复数据' : 'Restore from backup file';
   String get otherSection => isZh ? 'ℹ️ 其他' : 'ℹ️ Other';
@@ -175,26 +190,128 @@ Auto-refresh at midnight: health plans reset, schedules show/hide by date. Check
 
   // Preset health items (localized)
   List<Map<String, String>> get presetHealthItems => [
-    {'name': isZh ? '饮水' : 'Drink Water', 'icon': 'water_drop', 'description': isZh ? '每天饮用充足的水分，建议成年人每日饮水量约1500-2000ml' : 'Drink enough water daily, about 1500-2000ml for adults', 'defaultValue': '2000ml'},
-    {'name': isZh ? '跑步' : 'Running', 'icon': 'directions_run', 'description': isZh ? '每天坚持跑步，建议每次3-5公里，有助于心肺健康' : 'Run daily, recommend 3-5km each time', 'defaultValue': '5km'},
-    {'name': isZh ? '远眺' : 'Eye Rest', 'icon': 'visibility', 'description': isZh ? '每工作/学习45分钟后远眺5分钟，缓解视疲劳' : 'Look into the distance 5min after every 45min of work', 'defaultValue': '5min'},
-    {'name': isZh ? '晨间拉伸' : 'Stretching', 'icon': 'self_improvement', 'description': isZh ? '早晨起床后进行5-10分钟全身拉伸，激活身体' : '5-10 min full body stretch in the morning', 'defaultValue': '10min'},
-    {'name': isZh ? '冥想' : 'Meditation', 'icon': 'self_improvement', 'description': isZh ? '每天冥想10-15分钟，缓解压力，提升专注力' : 'Meditate 10-15min daily to reduce stress', 'defaultValue': '10min'},
-    {'name': isZh ? '睡眠' : 'Sleep', 'icon': 'bedtime', 'description': isZh ? '保证每天7-8小时充足睡眠，23点前入睡为佳' : 'Get 7-8 hours of sleep, best before 11pm', 'defaultValue': '8h'},
-    {'name': isZh ? '水果摄入' : 'Fruits', 'icon': 'eco', 'description': isZh ? '每天摄入适量水果，补充维生素和膳食纤维' : 'Eat fruits daily for vitamins and fiber', 'defaultValue': '200g'},
-    {'name': isZh ? '步数' : 'Steps', 'icon': 'directions_walk', 'description': isZh ? '每天行走8000-10000步，保持基本运动量' : 'Walk 8000-10000 steps daily', 'defaultValue': '8000 steps'},
+    {
+      'name': isZh ? '饮水' : 'Drink Water',
+      'icon': 'water_drop',
+      'description': isZh
+          ? '每天饮用充足的水分，建议成年人每日饮水量约1500-2000ml'
+          : 'Drink enough water daily, about 1500-2000ml for adults',
+      'defaultValue': '2000ml',
+    },
+    {
+      'name': isZh ? '跑步' : 'Running',
+      'icon': 'directions_run',
+      'description': isZh
+          ? '每天坚持跑步，建议每次3-5公里，有助于心肺健康'
+          : 'Run daily, recommend 3-5km each time',
+      'defaultValue': '5km',
+    },
+    {
+      'name': isZh ? '远眺' : 'Eye Rest',
+      'icon': 'visibility',
+      'description': isZh
+          ? '每工作/学习45分钟后远眺5分钟，缓解视疲劳'
+          : 'Look into the distance 5min after every 45min of work',
+      'defaultValue': '5min',
+    },
+    {
+      'name': isZh ? '晨间拉伸' : 'Stretching',
+      'icon': 'self_improvement',
+      'description': isZh
+          ? '早晨起床后进行5-10分钟全身拉伸，激活身体'
+          : '5-10 min full body stretch in the morning',
+      'defaultValue': '10min',
+    },
+    {
+      'name': isZh ? '冥想' : 'Meditation',
+      'icon': 'self_improvement',
+      'description': isZh
+          ? '每天冥想10-15分钟，缓解压力，提升专注力'
+          : 'Meditate 10-15min daily to reduce stress',
+      'defaultValue': '10min',
+    },
+    {
+      'name': isZh ? '睡眠' : 'Sleep',
+      'icon': 'bedtime',
+      'description': isZh
+          ? '保证每天7-8小时充足睡眠，23点前入睡为佳'
+          : 'Get 7-8 hours of sleep, best before 11pm',
+      'defaultValue': '8h',
+    },
+    {
+      'name': isZh ? '水果摄入' : 'Fruits',
+      'icon': 'eco',
+      'description': isZh
+          ? '每天摄入适量水果，补充维生素和膳食纤维'
+          : 'Eat fruits daily for vitamins and fiber',
+      'defaultValue': '200g',
+    },
+    {
+      'name': isZh ? '步数' : 'Steps',
+      'icon': 'directions_walk',
+      'description': isZh
+          ? '每天行走8000-10000步，保持基本运动量'
+          : 'Walk 8000-10000 steps daily',
+      'defaultValue': '8000 steps',
+    },
   ];
 
   // Preset schedule items (localized)
   List<Map<String, String>> get presetScheduleItems => [
-    {'name': isZh ? '晨读' : 'Morning Reading', 'icon': 'menu_book', 'description': isZh ? '早晨阅读30分钟，可选择外语文章或专业知识书籍' : 'Read 30min in the morning'},
-    {'name': isZh ? '背单词' : 'Vocabulary', 'icon': 'spellcheck', 'description': isZh ? '每日背诵20-30个新单词，长期积累词汇量' : 'Memorize 20-30 new words daily'},
-    {'name': isZh ? '课堂笔记整理' : 'Notes Review', 'icon': 'edit_note', 'description': isZh ? '整理当天课堂笔记，加深记忆理解' : 'Organize class notes for better retention'},
-    {'name': isZh ? '作业时间' : 'Homework', 'icon': 'assignment', 'description': isZh ? '集中精力完成当天作业，建议使用番茄工作法' : 'Focus on homework, try Pomodoro technique'},
-    {'name': isZh ? '复习' : 'Review', 'icon': 'replay', 'description': isZh ? '复习当天所学内容，巩固知识点' : 'Review what you learned today'},
-    {'name': isZh ? '编程练习' : 'Coding', 'icon': 'code', 'description': isZh ? '每天练习一道算法题或一个编程实践' : 'Practice one algorithm or coding exercise daily'},
-    {'name': isZh ? '课题研究' : 'Research', 'icon': 'biotech', 'description': isZh ? '每日推进课题研究进度，阅读文献或做实验' : 'Advance research, read papers or experiment'},
-    {'name': isZh ? '学习新技能' : 'New Skill', 'icon': 'lightbulb', 'description': isZh ? '每天抽出时间学习一项新技能，如乐器、绘画等' : 'Learn a new skill like instrument, painting'},
+    {
+      'name': isZh ? '晨读' : 'Morning Reading',
+      'icon': 'menu_book',
+      'description': isZh
+          ? '早晨阅读30分钟，可选择外语文章或专业知识书籍'
+          : 'Read 30min in the morning',
+    },
+    {
+      'name': isZh ? '背单词' : 'Vocabulary',
+      'icon': 'spellcheck',
+      'description': isZh
+          ? '每日背诵20-30个新单词，长期积累词汇量'
+          : 'Memorize 20-30 new words daily',
+    },
+    {
+      'name': isZh ? '课堂笔记整理' : 'Notes Review',
+      'icon': 'edit_note',
+      'description': isZh
+          ? '整理当天课堂笔记，加深记忆理解'
+          : 'Organize class notes for better retention',
+    },
+    {
+      'name': isZh ? '作业时间' : 'Homework',
+      'icon': 'assignment',
+      'description': isZh
+          ? '集中精力完成当天作业，建议使用番茄工作法'
+          : 'Focus on homework, try Pomodoro technique',
+    },
+    {
+      'name': isZh ? '复习' : 'Review',
+      'icon': 'replay',
+      'description': isZh ? '复习当天所学内容，巩固知识点' : 'Review what you learned today',
+    },
+    {
+      'name': isZh ? '编程练习' : 'Coding',
+      'icon': 'code',
+      'description': isZh
+          ? '每天练习一道算法题或一个编程实践'
+          : 'Practice one algorithm or coding exercise daily',
+    },
+    {
+      'name': isZh ? '课题研究' : 'Research',
+      'icon': 'biotech',
+      'description': isZh
+          ? '每日推进课题研究进度，阅读文献或做实验'
+          : 'Advance research, read papers or experiment',
+    },
+    {
+      'name': isZh ? '学习新技能' : 'New Skill',
+      'icon': 'lightbulb',
+      'description': isZh
+          ? '每天抽出时间学习一项新技能，如乐器、绘画等'
+          : 'Learn a new skill like instrument, painting',
+    },
   ];
 
   // Task card tooltip

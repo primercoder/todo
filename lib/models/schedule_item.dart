@@ -53,7 +53,8 @@ class ScheduleItem {
       reminderEnabled: (map['reminder_enabled'] as int?) == 1,
       reminderTime: map['reminder_time'] as String? ?? '20:00',
       isActive: (map['is_active'] as int?) == 1,
-      createdAt: map['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      createdAt:
+          map['created_at'] as String? ?? DateTime.now().toIso8601String(),
     );
   }
 

@@ -57,7 +57,8 @@ class HealthItem {
       reminderTime: map['reminder_time'] as String? ?? '20:00',
       isActive: (map['is_active'] as int?) == 1,
       sortOrder: map['sort_order'] as int? ?? 0,
-      createdAt: map['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      createdAt:
+          map['created_at'] as String? ?? DateTime.now().toIso8601String(),
     );
   }
 

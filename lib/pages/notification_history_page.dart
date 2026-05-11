@@ -9,11 +9,21 @@ class NotificationHistoryPage extends StatefulWidget {
   const NotificationHistoryPage({super.key});
 
   @override
-  State<NotificationHistoryPage> createState() => _NotificationHistoryPageState();
+  State<NotificationHistoryPage> createState() =>
+      _NotificationHistoryPageState();
 }
 
 class _NotificationHistoryPageState extends State<NotificationHistoryPage> {
   int? _expandedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await NotificationService().clearUnread();
+      if (mounted) setState(() {});
+    });
+  }
 
   Future<List<Map<String, dynamic>>> _loadNotifications() async {
     final prefs = await SharedPreferences.getInstance();
@@ -67,9 +77,16 @@ class _NotificationHistoryPageState extends State<NotificationHistoryPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: Colors.grey[300]),
+                  Icon(
+                    Icons.notifications_none,
+                    size: 64,
+                    color: Colors.grey[300],
+                  ),
                   const SizedBox(height: 16),
-                  Text(l10n.noMessages, style: TextStyle(color: Colors.grey[400])),
+                  Text(
+                    l10n.noMessages,
+                    style: TextStyle(color: Colors.grey[400]),
+                  ),
                 ],
               ),
             );
@@ -97,11 +114,26 @@ class _NotificationHistoryPageState extends State<NotificationHistoryPage> {
                     setState(() => _expandedIndex = expanded ? index : null);
                   },
                   leading: CircleAvatar(
-                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    child: Icon(Icons.notifications_outlined, color: AppTheme.primaryColor, size: 20),
+                    backgroundColor: AppTheme.primaryColor.withValues(
+                      alpha: 0.1,
+                    ),
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: AppTheme.primaryColor,
+                      size: 20,
+                    ),
                   ),
-                  title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  subtitle: Text(timeStr, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  title: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    timeStr,
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

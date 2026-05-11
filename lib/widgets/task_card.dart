@@ -31,23 +31,40 @@ class TaskCard extends StatelessWidget {
 
   IconData _getIcon() {
     switch (icon) {
-      case 'water_drop': return Icons.water_drop;
-      case 'directions_run': return Icons.directions_run;
-      case 'visibility': return Icons.visibility;
-      case 'self_improvement': return Icons.self_improvement;
-      case 'meditation': return Icons.self_improvement;
-      case 'bedtime': return Icons.bedtime;
-      case 'eco': return Icons.eco;
-      case 'directions_walk': return Icons.directions_walk;
-      case 'menu_book': return Icons.menu_book;
-      case 'spellcheck': return Icons.spellcheck;
-      case 'edit_note': return Icons.edit_note;
-      case 'assignment': return Icons.assignment;
-      case 'replay': return Icons.replay;
-      case 'code': return Icons.code;
-      case 'biotech': return Icons.biotech;
-      case 'lightbulb': return Icons.lightbulb;
-      default: return isHealth ? Icons.favorite : Icons.event;
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'directions_run':
+        return Icons.directions_run;
+      case 'visibility':
+        return Icons.visibility;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'meditation':
+        return Icons.self_improvement;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'eco':
+        return Icons.eco;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      case 'menu_book':
+        return Icons.menu_book;
+      case 'spellcheck':
+        return Icons.spellcheck;
+      case 'edit_note':
+        return Icons.edit_note;
+      case 'assignment':
+        return Icons.assignment;
+      case 'replay':
+        return Icons.replay;
+      case 'code':
+        return Icons.code;
+      case 'biotech':
+        return Icons.biotech;
+      case 'lightbulb':
+        return Icons.lightbulb;
+      default:
+        return isHealth ? Icons.favorite : Icons.event;
     }
   }
 
@@ -75,15 +92,13 @@ class TaskCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isCompleted
                         ? AppTheme.completedColor
-                        : (isHealth ? AppTheme.healthColor : AppTheme.scheduleColor),
+                        : (isHealth
+                              ? AppTheme.healthColor
+                              : AppTheme.scheduleColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.all(10),
-                  child: Icon(
-                    _getIcon(),
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(_getIcon(), color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -94,7 +109,9 @@ class TaskCard extends StatelessWidget {
                         title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
+                          decoration: isCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
                           color: isCompleted ? Colors.grey : null,
                         ),
                       ),
@@ -148,7 +165,11 @@ class TaskCard extends StatelessWidget {
                               : Border.all(color: Colors.grey[400]!, width: 2),
                         ),
                         child: isCompleted
-                            ? const Icon(Icons.check, color: Colors.white, size: 20)
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              )
                             : null,
                       ),
                     ),

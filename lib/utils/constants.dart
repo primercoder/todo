@@ -52,41 +52,13 @@ List<Map<String, String>> presetHealthItems = [
 ];
 
 List<Map<String, String>> presetScheduleItems = [
-  {
-    'name': '晨读',
-    'icon': 'menu_book',
-    'description': '早晨阅读30分钟，可选择外语文章或专业知识书籍',
-  },
-  {
-    'name': '背单词',
-    'icon': 'spellcheck',
-    'description': '每日背诵20-30个新单词，长期积累词汇量',
-  },
-  {
-    'name': '课堂笔记整理',
-    'icon': 'edit_note',
-    'description': '整理当天课堂笔记，加深记忆理解',
-  },
-  {
-    'name': '作业时间',
-    'icon': 'assignment',
-    'description': '集中精力完成当天作业，建议使用番茄工作法',
-  },
-  {
-    'name': '复习',
-    'icon': 'replay',
-    'description': '复习当天所学内容，巩固知识点',
-  },
-  {
-    'name': '编程练习',
-    'icon': 'code',
-    'description': '每天练习一道算法题或一个编程实践',
-  },
-  {
-    'name': '课题研究',
-    'icon': 'biotech',
-    'description': '每日推进课题研究进度，阅读文献或做实验',
-  },
+  {'name': '晨读', 'icon': 'menu_book', 'description': '早晨阅读30分钟，可选择外语文章或专业知识书籍'},
+  {'name': '背单词', 'icon': 'spellcheck', 'description': '每日背诵20-30个新单词，长期积累词汇量'},
+  {'name': '课堂笔记整理', 'icon': 'edit_note', 'description': '整理当天课堂笔记，加深记忆理解'},
+  {'name': '作业时间', 'icon': 'assignment', 'description': '集中精力完成当天作业，建议使用番茄工作法'},
+  {'name': '复习', 'icon': 'replay', 'description': '复习当天所学内容，巩固知识点'},
+  {'name': '编程练习', 'icon': 'code', 'description': '每天练习一道算法题或一个编程实践'},
+  {'name': '课题研究', 'icon': 'biotech', 'description': '每日推进课题研究进度，阅读文献或做实验'},
   {
     'name': '学习新技能',
     'icon': 'lightbulb',

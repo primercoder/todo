@@ -15,7 +15,8 @@ class SettingsProvider extends ChangeNotifier {
   String get defaultSummaryTime => _defaultSummaryTime;
   bool get notificationsEnabled => _notificationsEnabled;
   String get localeCode => _localeCode;
-  Locale get locale => _localeCode == 'en' ? const Locale('en') : const Locale('zh');
+  Locale get locale =>
+      _localeCode == 'en' ? const Locale('en') : const Locale('zh');
 
   ThemeData get theme => AppTheme.getTheme(_themeName);
 
@@ -69,6 +70,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get notificationsSetupComplete {
     return _notificationsSetupComplete;
   }
+
   bool _notificationsSetupComplete = false;
 
   void markNotificationsSetupComplete() {
@@ -85,7 +87,8 @@ class SettingsProvider extends ChangeNotifier {
     _defaultSummaryTime = prefs.getString('default_summary_time') ?? '23:00';
     _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
     _localeCode = prefs.getString('locale_code') ?? 'zh';
-    _notificationsSetupComplete = prefs.getBool('notifications_setup_complete') ?? false;
+    _notificationsSetupComplete =
+        prefs.getBool('notifications_setup_complete') ?? false;
     notifyListeners();
   }
 
@@ -114,7 +117,8 @@ class SettingsProvider extends ChangeNotifier {
       await prefs.setString('default_summary_time', _defaultSummaryTime);
     }
     if (settings.containsKey('notifications_enabled')) {
-      _notificationsEnabled = settings['notifications_enabled'].toString() == 'true';
+      _notificationsEnabled =
+          settings['notifications_enabled'].toString() == 'true';
       await prefs.setBool('notifications_enabled', _notificationsEnabled);
     }
     if (settings.containsKey('locale_code')) {

@@ -25,7 +25,8 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
     _allItems = await _db.getAllScheduleItems();
     final today = DateTime.now();
-    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     _todayItems = await _db.getScheduleItemsForDate(dateStr);
     _isLoading = false;
     notifyListeners();
@@ -36,8 +37,9 @@ class ScheduleProvider extends ChangeNotifier {
   }
 
   bool hasDuplicate(String name, String date, {int? excludeId}) {
-    return _allItems.any((i) =>
-        i.name == name && i.scheduleDate == date && i.id != excludeId);
+    return _allItems.any(
+      (i) => i.name == name && i.scheduleDate == date && i.id != excludeId,
+    );
   }
 
   Future<bool> addItem(ScheduleItem item) async {
@@ -46,7 +48,8 @@ class ScheduleProvider extends ChangeNotifier {
     final newItem = item.copyWith(id: id);
     _allItems.insert(0, newItem);
     final today = DateTime.now();
-    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     if (newItem.scheduleDate == dateStr) {
       _todayItems.add(newItem);
     }
@@ -74,7 +77,8 @@ class ScheduleProvider extends ChangeNotifier {
     } else {
       _allItems[index] = updated;
       final today = DateTime.now();
-      final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      final dateStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
       if (updated.scheduleDate == dateStr) {
         _todayItems.add(updated);
       }
@@ -99,10 +103,17 @@ class ScheduleProvider extends ChangeNotifier {
         final minute = int.tryParse(timeParts[1]) ?? 0;
         final isZh = await _isZh;
         final title = isZh ? '📅 日程提醒' : '📅 Schedule Reminder';
-        final body = _buildScheduleReminderBody(item.name, item.description, isZh);
+        final body = _buildScheduleReminderBody(
+          item.name,
+          item.description,
+          isZh,
+        );
         await _notificationService.scheduleTaskReminder(
-          id: item.id! + 20000, title: title, body: body,
-          hour: hour, minute: minute,
+          id: item.id! + 20000,
+          title: title,
+          body: body,
+          hour: hour,
+          minute: minute,
         );
       }
     } else if (item.id != null) {
@@ -114,7 +125,11 @@ class ScheduleProvider extends ChangeNotifier {
     await _scheduleReminder(item);
   }
 
-  String _buildScheduleReminderBody(String name, String description, bool isZh) {
+  String _buildScheduleReminderBody(
+    String name,
+    String description,
+    bool isZh,
+  ) {
     if (isZh) {
       final msgs = [
         '「$name」到时间啦！${description.isNotEmpty ? description : "别忘记哦~"} 📚',
@@ -126,11 +141,11 @@ class ScheduleProvider extends ChangeNotifier {
       return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
     }
     final msgs = [
-      '"$name" is up! ${description.isNotEmpty ? description : "Don\'t forget~"} 📚',
+      '"$name" is up! ${description.isNotEmpty ? description : "Don't forget~"} 📚',
       'Time for "$name"! ${description.isNotEmpty ? description : "Procrastination is the thief of time~"} ⏰',
       '"$name" reminder! ${description.isNotEmpty ? description : "Completing tasks feels great!"} 🎯',
       '"$name" time! ${description.isNotEmpty ? description : "One step forward today~"} 🚀',
-      'Hey, "$name" is calling! ${description.isNotEmpty ? description : "Let\'s crush this one!"} 😎',
+      'Hey, "$name" is calling! ${description.isNotEmpty ? description : "Let's crush this one!"} 😎',
     ];
     return msgs[DateTime.now().millisecondsSinceEpoch % msgs.length];
   }

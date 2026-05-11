@@ -4,7 +4,10 @@ import '../services/notification_service.dart';
 class ToastOverlay {
   static OverlayEntry? _entry;
 
-  static void show(String message, {Duration duration = const Duration(seconds: 2)}) {
+  static void show(
+    String message, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
     _entry?.remove();
     _entry = null;
 
@@ -58,9 +61,10 @@ class _ToastWidgetState extends State<_ToastWidget>
       duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -0.6),
       end: Offset.zero,

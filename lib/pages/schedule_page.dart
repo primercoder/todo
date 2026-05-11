@@ -15,7 +15,8 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMixin {
+class _SchedulePageState extends State<SchedulePage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -26,7 +27,10 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
+    );
     _fadeController.forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -100,9 +104,15 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
                   children: [
                     Icon(Icons.event_busy, size: 64, color: Colors.grey[300]),
                     const SizedBox(height: 16),
-                    Text(l10n2.noSchedule, style: TextStyle(color: Colors.grey[400], fontSize: 16)),
+                    Text(
+                      l10n2.noSchedule,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 16),
+                    ),
                     const SizedBox(height: 8),
-                    Text(l10n2.addScheduleHint, style: TextStyle(color: Colors.grey[400])),
+                    Text(
+                      l10n2.addScheduleHint,
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
                   ],
                 ),
               ),
@@ -141,7 +151,11 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildDateGroup(String date, List<ScheduleItem> items, ThemeData theme) {
+  Widget _buildDateGroup(
+    String date,
+    List<ScheduleItem> items,
+    ThemeData theme,
+  ) {
     final isToday = date == todayDate();
     final dateDisplay = isToday ? '今天 ${formatDate(date)}' : formatDate(date);
 
@@ -183,7 +197,11 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildScheduleCard(BuildContext context, ScheduleItem item, ThemeData theme) {
+  Widget _buildScheduleCard(
+    BuildContext context,
+    ScheduleItem item,
+    ThemeData theme,
+  ) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
@@ -202,7 +220,9 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
         ),
         title: Text(
           item.name,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +230,9 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
             if (item.description.isNotEmpty)
               Text(
                 item.description,
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -227,9 +249,16 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
             if (item.reminderEnabled)
               Row(
                 children: [
-                  Icon(Icons.notifications_active, size: 12, color: AppTheme.accentColor),
+                  Icon(
+                    Icons.notifications_active,
+                    size: 12,
+                    color: AppTheme.accentColor,
+                  ),
                   const SizedBox(width: 4),
-                  Text(item.reminderTime, style: TextStyle(fontSize: 11, color: AppTheme.accentColor)),
+                  Text(
+                    item.reminderTime,
+                    style: TextStyle(fontSize: 11, color: AppTheme.accentColor),
+                  ),
                 ],
               ),
           ],
@@ -262,7 +291,10 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
         title: Text(l10n.confirmDeleteTitle),
         content: Text(l10n.confirmDeleteSchedule(item.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
           TextButton(
             onPressed: () {
               context.read<ScheduleProvider>().deleteItem(item.id!);
@@ -277,15 +309,24 @@ class _SchedulePageState extends State<SchedulePage> with TickerProviderStateMix
 
   IconData _getScheduleIcon(String iconName) {
     switch (iconName) {
-      case 'menu_book': return Icons.menu_book;
-      case 'spellcheck': return Icons.spellcheck;
-      case 'edit_note': return Icons.edit_note;
-      case 'assignment': return Icons.assignment;
-      case 'replay': return Icons.replay;
-      case 'code': return Icons.code;
-      case 'biotech': return Icons.biotech;
-      case 'lightbulb': return Icons.lightbulb;
-      default: return Icons.event_note;
+      case 'menu_book':
+        return Icons.menu_book;
+      case 'spellcheck':
+        return Icons.spellcheck;
+      case 'edit_note':
+        return Icons.edit_note;
+      case 'assignment':
+        return Icons.assignment;
+      case 'replay':
+        return Icons.replay;
+      case 'code':
+        return Icons.code;
+      case 'biotech':
+        return Icons.biotech;
+      case 'lightbulb':
+        return Icons.lightbulb;
+      default:
+        return Icons.event_note;
     }
   }
 }
@@ -305,14 +346,27 @@ class _SchedulePresetSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          Text(l10n.presetScheduleTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            l10n.presetScheduleTitle,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(l10n.presetScheduleDesc, style: TextStyle(color: Colors.grey[500])),
+          Text(
+            l10n.presetScheduleDesc,
+            style: TextStyle(color: Colors.grey[500]),
+          ),
           const SizedBox(height: 16),
           Flexible(
             child: ListView.builder(
@@ -323,29 +377,55 @@ class _SchedulePresetSheet extends StatelessWidget {
                 return ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppTheme.scheduleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                    child: Icon(_getPresetIcon(item['icon']!), color: AppTheme.scheduleColor, size: 22),
+                    decoration: BoxDecoration(
+                      color: AppTheme.scheduleColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      _getPresetIcon(item['icon']!),
+                      color: AppTheme.scheduleColor,
+                      size: 22,
+                    ),
                   ),
-                  title: Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(item['description']!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  title: Text(
+                    item['name']!,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    item['description']!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: IconButton(
-                    icon: Icon(Icons.add_circle_outline, color: AppTheme.scheduleColor),
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      color: AppTheme.scheduleColor,
+                    ),
                     onPressed: () async {
                       final provider = context.read<ScheduleProvider>();
                       final name = item['name']!;
                       final today = todayDate();
                       if (provider.hasDuplicate(name, today)) {
-                        ToastOverlay.show(l10n.duplicateSchedule(name, formatDate(today)));
+                        ToastOverlay.show(
+                          l10n.duplicateSchedule(name, formatDate(today)),
+                          duration: const Duration(seconds: 1),
+                        );
                         return;
                       }
                       final newItem = ScheduleItem(
-                        name: name, icon: item['icon']!, category: 'preset',
+                        name: name,
+                        icon: item['icon']!,
+                        category: 'preset',
                         description: item['description']!,
-                        scheduleDate: today, isActive: true,
+                        scheduleDate: today,
+                        isActive: true,
                       );
                       await provider.addItem(newItem);
                       if (context.mounted) Navigator.pop(context);
-                      ToastOverlay.show(l10n.addedToSchedule(name));
+                      ToastOverlay.show(
+                        l10n.addedToSchedule(name),
+                        duration: const Duration(seconds: 1),
+                      );
                     },
                   ),
                 );
@@ -359,15 +439,24 @@ class _SchedulePresetSheet extends StatelessWidget {
 
   IconData _getPresetIcon(String iconName) {
     switch (iconName) {
-      case 'menu_book': return Icons.menu_book;
-      case 'spellcheck': return Icons.spellcheck;
-      case 'edit_note': return Icons.edit_note;
-      case 'assignment': return Icons.assignment;
-      case 'replay': return Icons.replay;
-      case 'code': return Icons.code;
-      case 'biotech': return Icons.biotech;
-      case 'lightbulb': return Icons.lightbulb;
-      default: return Icons.event_note;
+      case 'menu_book':
+        return Icons.menu_book;
+      case 'spellcheck':
+        return Icons.spellcheck;
+      case 'edit_note':
+        return Icons.edit_note;
+      case 'assignment':
+        return Icons.assignment;
+      case 'replay':
+        return Icons.replay;
+      case 'code':
+        return Icons.code;
+      case 'biotech':
+        return Icons.biotech;
+      case 'lightbulb':
+        return Icons.lightbulb;
+      default:
+        return Icons.event_note;
     }
   }
 }
@@ -397,7 +486,9 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.item?.name ?? '');
     _notesCtrl = TextEditingController(text: widget.item?.notes ?? '');
-    _descriptionCtrl = TextEditingController(text: widget.item?.description ?? '');
+    _descriptionCtrl = TextEditingController(
+      text: widget.item?.description ?? '',
+    );
 
     _selectedDate = widget.item != null
         ? DateTime.tryParse(widget.item!.scheduleDate) ?? DateTime.now()
@@ -415,7 +506,10 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
   TimeOfDay _parseTime(String timeStr) {
     final parts = timeStr.split(':');
     if (parts.length == 2) {
-      return TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
+      return TimeOfDay(
+        hour: int.tryParse(parts[0]) ?? 20,
+        minute: int.tryParse(parts[1]) ?? 0,
+      );
     }
     return const TimeOfDay(hour: 20, minute: 0);
   }
@@ -462,23 +556,33 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
     final l10n = AppL10n.of(context);
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      ToastOverlay.show(l10n.nameRequired);
+      ToastOverlay.show(
+        l10n.nameRequired,
+        duration: const Duration(seconds: 1),
+      );
       return;
     }
 
-    final dateStr = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
     final provider = context.read<ScheduleProvider>();
 
     if (!isEditing && provider.hasDuplicate(name, dateStr)) {
-      final dateDisplay = '${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}';
-      ToastOverlay.show(l10n.duplicateSchedule(name, dateDisplay));
+      final dateDisplay =
+          '${_selectedDate.year}.${_selectedDate.month}.${_selectedDate.day}';
+      ToastOverlay.show(
+        l10n.duplicateSchedule(name, dateDisplay),
+        duration: const Duration(seconds: 1),
+      );
       return;
     }
 
-    final timeStr = '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}';
 
     final item = ScheduleItem(
-      id: widget.item?.id, name: name,
+      id: widget.item?.id,
+      name: name,
       icon: widget.item?.icon ?? 'event_note',
       category: widget.item?.category ?? 'custom',
       description: _descriptionCtrl.text.trim(),
@@ -529,7 +633,9 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
             const SizedBox(height: 20),
             Text(
               isEditing ? l10n.editSchedule : l10n.addNewSchedule,
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
             TextField(
@@ -537,7 +643,9 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.scheduleName,
                 hintText: l10n.scheduleNameHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.edit),
               ),
             ),
@@ -547,7 +655,9 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.descriptionLabel,
                 hintText: l10n.descriptionHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.description),
               ),
             ),
@@ -558,7 +668,9 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
               decoration: InputDecoration(
                 labelText: l10n.notesLabel,
                 hintText: l10n.notesHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 prefixIcon: const Icon(Icons.note),
               ),
             ),
@@ -579,22 +691,40 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.scheduleDateLabel, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                        Text(
+                          l10n.scheduleDateLabel,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           '${_selectedDate.year}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.day.toString().padLeft(2, '0')}',
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.scheduleColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(l10n.changeDate, style: TextStyle(color: AppTheme.scheduleColor, fontSize: 13)),
+                      child: Text(
+                        l10n.changeDate,
+                        style: TextStyle(
+                          color: AppTheme.scheduleColor,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -607,7 +737,8 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
               subtitle: _reminderEnabled
                   ? Text(
                       '${l10n.reminderTimeLabel}: ${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
-                      style: TextStyle(color: AppTheme.accentColor))
+                      style: TextStyle(color: AppTheme.accentColor),
+                    )
                   : Text(l10n.reminderOffDesc),
               value: _reminderEnabled,
               activeTrackColor: AppTheme.scheduleColor,
@@ -619,10 +750,17 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                 child: OutlinedButton.icon(
                   onPressed: _pickTime,
                   icon: const Icon(Icons.access_time),
-                  label: Text('${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}'),
+                  label: Text(
+                    '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
+                  ),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -635,9 +773,14 @@ class _ScheduleItemEditorState extends State<_ScheduleItemEditor> {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppTheme.scheduleColor,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: Text(isEditing ? l10n.save : l10n.add, style: const TextStyle(fontSize: 16)),
+                child: Text(
+                  isEditing ? l10n.save : l10n.add,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

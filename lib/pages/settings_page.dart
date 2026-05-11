@@ -21,7 +21,8 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMixin {
+class _SettingsPageState extends State<SettingsPage>
+    with TickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _animation;
 
@@ -32,7 +33,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _animation = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _animation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
     _animController.forward();
   }
 
@@ -42,7 +46,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     super.dispose();
   }
 
-  Future<void> _pickTime(String currentTime, ValueChanged<String> onTimePicked) async {
+  Future<void> _pickTime(
+    String currentTime,
+    ValueChanged<String> onTimePicked,
+  ) async {
     final l10n = AppL10n.of(context);
     final parts = currentTime.split(':');
     final initialTime = TimeOfDay(
@@ -58,7 +65,8 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     );
 
     if (picked != null) {
-      final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      final timeStr =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       onTimePicked(timeStr);
     }
   }
@@ -66,9 +74,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   Future<void> _exportData() async {
     try {
       final db = DatabaseHelper();
+      // Capture provider before awaiting to avoid using BuildContext across async gaps
+      final settings = context.read<SettingsProvider>();
       final healthItems = await db.exportHealthItems();
       final scheduleItems = await db.exportScheduleItems();
-      final settings = context.read<SettingsProvider>();
       final settingsMap = await settings.getSettingsMap();
 
       final data = appDataToJson(
@@ -82,10 +91,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       final file = File('${dir.path}/todo_backup_${todayDate()}.json');
       await file.writeAsString(jsonStr);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'TODO App 数据备份',
-      );
+      await Share.shareXFiles([XFile(file.path)], subject: 'TODO App 数据备份');
 
       if (mounted) {
         final l10n = AppL10n.of(context);
@@ -101,9 +107,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
   Future<void> _importData() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-      );
+      // Capture provider early to avoid using BuildContext after await
+      final settingsProvider = context.read<SettingsProvider>();
+
+      final result = await FilePicker.platform.pickFiles(type: FileType.any);
 
       if (result == null || result.files.isEmpty) return;
 
@@ -122,14 +129,19 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       final db = DatabaseHelper();
 
       if (data.containsKey('healthItems')) {
-        await db.importHealthItems(List<Map<String, dynamic>>.from(data['healthItems'] as List));
+        await db.importHealthItems(
+          List<Map<String, dynamic>>.from(data['healthItems'] as List),
+        );
       }
       if (data.containsKey('scheduleItems')) {
-        await db.importScheduleItems(List<Map<String, dynamic>>.from(data['scheduleItems'] as List));
+        await db.importScheduleItems(
+          List<Map<String, dynamic>>.from(data['scheduleItems'] as List),
+        );
       }
       if (data.containsKey('settings') && data['settings'] is Map) {
-        final settings = context.read<SettingsProvider>();
-        await settings.restoreSettings(Map<String, String>.from(data['settings'] as Map));
+        await settingsProvider.restoreSettings(
+          Map<String, String>.from(data['settings'] as Map),
+        );
       }
 
       if (mounted) {
@@ -184,24 +196,39 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 child: Column(
                   children: [
                     _buildThemeOption(
-                      l10n.lightTheme, 'light', Icons.light_mode,
-                      settings.themeName, () => settings.setTheme('light'),
+                      l10n.lightTheme,
+                      'light',
+                      Icons.light_mode,
+                      settings.themeName,
+                      () => settings.setTheme('light'),
                     ),
                     _buildThemeOption(
-                      l10n.darkTheme, 'dark', Icons.dark_mode,
-                      settings.themeName, () => settings.setTheme('dark'),
+                      l10n.darkTheme,
+                      'dark',
+                      Icons.dark_mode,
+                      settings.themeName,
+                      () => settings.setTheme('dark'),
                     ),
                     _buildThemeOption(
-                      l10n.gardenTheme, 'garden', Icons.local_florist,
-                      settings.themeName, () => settings.setTheme('garden'),
+                      l10n.gardenTheme,
+                      'garden',
+                      Icons.local_florist,
+                      settings.themeName,
+                      () => settings.setTheme('garden'),
                     ),
                     _buildThemeOption(
-                      l10n.oceanTheme, 'ocean', Icons.water,
-                      settings.themeName, () => settings.setTheme('ocean'),
+                      l10n.oceanTheme,
+                      'ocean',
+                      Icons.water,
+                      settings.themeName,
+                      () => settings.setTheme('ocean'),
                     ),
                     _buildThemeOption(
-                      l10n.sunsetTheme, 'sunset', Icons.wb_sunny,
-                      settings.themeName, () => settings.setTheme('sunset'),
+                      l10n.sunsetTheme,
+                      'sunset',
+                      Icons.wb_sunny,
+                      settings.themeName,
+                      () => settings.setTheme('sunset'),
                     ),
                   ],
                 ),
@@ -229,7 +256,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       title: Text(l10n.defaultReminderTimeLabel),
                       subtitle: Text(l10n.defaultReminderDesc),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -252,7 +282,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       title: Text(l10n.summaryTimeLabel),
                       subtitle: Text(l10n.summaryDesc),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.secondaryColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -314,7 +347,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       leading: const Icon(Icons.language),
                       title: Text(l10n.chineseLabel),
                       trailing: settings.localeCode == 'zh'
-                          ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppTheme.primaryColor,
+                            )
                           : null,
                       onTap: () => settings.setLocale('zh'),
                     ),
@@ -322,7 +358,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                       leading: const Icon(Icons.language),
                       title: Text(l10n.englishLabel),
                       trailing: settings.localeCode == 'en'
-                          ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppTheme.primaryColor,
+                            )
                           : null,
                       onTap: () => settings.setLocale('en'),
                     ),
@@ -349,10 +388,16 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
             const SizedBox(height: 40),
             Center(
-              child: Text('TODO v1.0.0', style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+              child: Text(
+                'TODO v1.0.0',
+                style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              ),
             ),
             Center(
-              child: Text(l10n.todoSlogan, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+              child: Text(
+                l10n.todoSlogan,
+                style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              ),
             ),
           ],
         ),
@@ -375,12 +420,25 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildThemeOption(String name, String value, IconData icon, String current, VoidCallback onTap) {
+  Widget _buildThemeOption(
+    String name,
+    String value,
+    IconData icon,
+    String current,
+    VoidCallback onTap,
+  ) {
     final isSelected = value == current;
     return ListTile(
       leading: Icon(icon, color: isSelected ? AppTheme.primaryColor : null),
-      title: Text(name, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-      trailing: isSelected ? Icon(Icons.check_circle, color: AppTheme.primaryColor) : null,
+      title: Text(
+        name,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: AppTheme.primaryColor)
+          : null,
       onTap: onTap,
     );
   }

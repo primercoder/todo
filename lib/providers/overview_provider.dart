@@ -99,8 +99,10 @@ class OverviewProvider extends ChangeNotifier {
     if (nowCompleted) {
       await _notificationService.cancelTaskReminder(itemId + 10000);
     } else {
-      final item = _healthItems.firstWhere((h) => h.id == itemId,
-          orElse: () => _healthItems.first);
+      final item = _healthItems.firstWhere(
+        (h) => h.id == itemId,
+        orElse: () => _healthItems.first,
+      );
       if (item.reminderEnabled) {
         final parts = item.reminderTime.split(':');
         if (parts.length == 2) {
@@ -125,8 +127,10 @@ class OverviewProvider extends ChangeNotifier {
     if (nowCompleted) {
       await _notificationService.cancelTaskReminder(itemId + 20000);
     } else {
-      final item = _scheduleItems.firstWhere((s) => s.id == itemId,
-          orElse: () => _scheduleItems.first);
+      final item = _scheduleItems.firstWhere(
+        (s) => s.id == itemId,
+        orElse: () => _scheduleItems.first,
+      );
       if (item.reminderEnabled) {
         final parts = item.reminderTime.split(':');
         if (parts.length == 2) {

@@ -39,27 +39,69 @@ class FilterBar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(categoryLabel, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+            Text(
+              categoryLabel,
+              style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey),
+            ),
             const SizedBox(height: 6),
             Row(
               children: [
-                _buildChip(context, allLabel, 'all', categoryFilter, onCategoryChanged),
+                _buildChip(
+                  context,
+                  allLabel,
+                  'all',
+                  categoryFilter,
+                  onCategoryChanged,
+                ),
                 const SizedBox(width: 8),
-                _buildChip(context, healthLabel, 'health', categoryFilter, onCategoryChanged),
+                _buildChip(
+                  context,
+                  healthLabel,
+                  'health',
+                  categoryFilter,
+                  onCategoryChanged,
+                ),
                 const SizedBox(width: 8),
-                _buildChip(context, scheduleLabel, 'schedule', categoryFilter, onCategoryChanged),
+                _buildChip(
+                  context,
+                  scheduleLabel,
+                  'schedule',
+                  categoryFilter,
+                  onCategoryChanged,
+                ),
               ],
             ),
             const SizedBox(height: 10),
-            Text(completionLabel, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey)),
+            Text(
+              completionLabel,
+              style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey),
+            ),
             const SizedBox(height: 6),
             Row(
               children: [
-                _buildChip(context, allLabel, 'all', completionFilter, onCompletionChanged),
+                _buildChip(
+                  context,
+                  allLabel,
+                  'all',
+                  completionFilter,
+                  onCompletionChanged,
+                ),
                 const SizedBox(width: 8),
-                _buildChip(context, completedLabel, 'completed', completionFilter, onCompletionChanged),
+                _buildChip(
+                  context,
+                  completedLabel,
+                  'completed',
+                  completionFilter,
+                  onCompletionChanged,
+                ),
                 const SizedBox(width: 8),
-                _buildChip(context, incompleteLabel, 'incomplete', completionFilter, onCompletionChanged),
+                _buildChip(
+                  context,
+                  incompleteLabel,
+                  'incomplete',
+                  completionFilter,
+                  onCompletionChanged,
+                ),
               ],
             ),
           ],
@@ -68,7 +110,13 @@ class FilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(BuildContext context, String label, String value, String current, ValueChanged<String> onChange) {
+  Widget _buildChip(
+    BuildContext context,
+    String label,
+    String value,
+    String current,
+    ValueChanged<String> onChange,
+  ) {
     final isSelected = value == current;
     return GestureDetector(
       onTap: () => onChange(value),
@@ -76,7 +124,9 @@ class FilterBar extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[100],
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

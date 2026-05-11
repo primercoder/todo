@@ -17,7 +17,8 @@ class OverviewPage extends StatefulWidget {
   State<OverviewPage> createState() => _OverviewPageState();
 }
 
-class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMixin {
+class _OverviewPageState extends State<OverviewPage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   bool _showFilters = false;
@@ -36,7 +37,10 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
+    );
     _fadeController.forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,7 +58,8 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
   Future<void> _selectDate() async {
     final provider = context.read<OverviewProvider>();
     final l10n = AppL10n.of(context);
-    final currentDate = DateTime.tryParse(provider.currentDate) ?? DateTime.now();
+    final currentDate =
+        DateTime.tryParse(provider.currentDate) ?? DateTime.now();
 
     final picked = await showDatePicker(
       context: context,
@@ -67,7 +72,8 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     );
 
     if (picked != null) {
-      final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      final dateStr =
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
       provider.setDate(dateStr);
     }
   }
@@ -90,14 +96,20 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                 builder: (context, provider, _) {
                   final date = DateTime.tryParse(provider.currentDate);
                   final today = DateTime.now();
-                  final isToday = date != null &&
+                  final isToday =
+                      date != null &&
                       date.year == today.year &&
                       date.month == today.month &&
                       date.day == today.day;
 
                   return Text(
-                    isToday ? l10n.todayOverview : formatDate(provider.currentDate),
-                    style: TextStyle(fontSize: isToday && !l10n.isZh ? 14 : 16, fontWeight: FontWeight.w600),
+                    isToday
+                        ? l10n.todayOverview
+                        : formatDate(provider.currentDate),
+                    style: TextStyle(
+                      fontSize: isToday && !l10n.isZh ? 14 : 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   );
                 },
               ),
@@ -118,7 +130,10 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                     top: -2,
                     child: Container(
                       padding: _unreadCount > 9
-                          ? const EdgeInsets.symmetric(horizontal: 4, vertical: 2)
+                          ? const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            )
                           : const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
                         color: Colors.red,
@@ -145,13 +160,20 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
               await NotificationService().clearUnread();
               if (mounted) setState(() => _unreadCount = 0);
               if (context.mounted) {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationHistoryPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationHistoryPage(),
+                  ),
+                );
               }
             },
             tooltip: l10n.bellTooltip,
           ),
           IconButton(
-            icon: Icon(_showFilters ? Icons.filter_list_off : Icons.filter_list),
+            icon: Icon(
+              _showFilters ? Icons.filter_list_off : Icons.filter_list,
+            ),
             onPressed: () {
               setState(() => _showFilters = !_showFilters);
             },
@@ -193,8 +215,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                       completedLabel: l10n.completed,
                       incompleteLabel: l10n.incomplete,
                     ),
-                  if (_showHistory)
-                    _buildHistorySection(theme, l10n),
+                  if (_showHistory) _buildHistorySection(theme, l10n),
                   if (_showFiltered(overview, 'health'))
                     _buildSectionHeader(
                       icon: Icons.favorite,
@@ -203,16 +224,23 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                     ),
                   if (_showFiltered(overview, 'health'))
                     ...overview.filteredHealthItems.map((h) {
-                      final completed = overview.healthCompletion[h.id] ?? false;
+                      final completed =
+                          overview.healthCompletion[h.id] ?? false;
                       return TaskCard(
                         title: h.name,
-                        subtitle: h.defaultValue.isNotEmpty ? '建议: ${h.defaultValue}' : h.description,
+                        subtitle: h.defaultValue.isNotEmpty
+                            ? '建议: ${h.defaultValue}'
+                            : h.description,
                         icon: h.icon,
                         isCompleted: completed,
                         isHealth: true,
                         notes: h.notes.isNotEmpty ? h.notes : null,
-                        description: h.description.isNotEmpty ? h.description : null,
-                        defaultValue: h.defaultValue.isNotEmpty ? h.defaultValue : null,
+                        description: h.description.isNotEmpty
+                            ? h.description
+                            : null,
+                        defaultValue: h.defaultValue.isNotEmpty
+                            ? h.defaultValue
+                            : null,
                         category: h.category,
                         onToggle: () => overview.toggleHealthCompletion(h.id!),
                         onTapDetail: () => _showDetailSheet(
@@ -224,7 +252,9 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                           defaultValue: h.defaultValue,
                           notes: h.notes,
                           category: h.category,
-                          reminderTime: h.reminderEnabled ? h.reminderTime : null,
+                          reminderTime: h.reminderEnabled
+                              ? h.reminderTime
+                              : null,
                           isCompleted: completed,
                         ),
                       );
@@ -237,17 +267,23 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                     ),
                   if (_showFiltered(overview, 'schedule'))
                     ...overview.filteredScheduleItems.map((s) {
-                      final completed = overview.scheduleCompletion[s.id] ?? false;
+                      final completed =
+                          overview.scheduleCompletion[s.id] ?? false;
                       return TaskCard(
                         title: s.name,
-                        subtitle: s.description.isNotEmpty ? s.description : null,
+                        subtitle: s.description.isNotEmpty
+                            ? s.description
+                            : null,
                         icon: s.icon,
                         isCompleted: completed,
                         isHealth: false,
                         notes: s.notes.isNotEmpty ? s.notes : null,
-                        description: s.description.isNotEmpty ? s.description : null,
+                        description: s.description.isNotEmpty
+                            ? s.description
+                            : null,
                         category: s.category,
-                        onToggle: () => overview.toggleScheduleCompletion(s.id!),
+                        onToggle: () =>
+                            overview.toggleScheduleCompletion(s.id!),
                         onTapDetail: () => _showDetailSheet(
                           context,
                           name: s.name,
@@ -257,13 +293,14 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                           notes: s.notes,
                           category: s.category,
                           scheduleDate: s.scheduleDate,
-                          reminderTime: s.reminderEnabled ? s.reminderTime : null,
+                          reminderTime: s.reminderEnabled
+                              ? s.reminderTime
+                              : null,
                           isCompleted: completed,
                         ),
                       );
                     }),
-                  if (overview.totalTasks == 0)
-                    _buildEmptyState(theme, l10n),
+                  if (overview.totalTasks == 0) _buildEmptyState(theme, l10n),
                   const SizedBox(height: 80),
                 ],
               ),
@@ -279,7 +316,11 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     return overview.categoryFilter == type;
   }
 
-  Widget _buildProgressBar(OverviewProvider overview, ThemeData theme, AppL10n l10n) {
+  Widget _buildProgressBar(
+    OverviewProvider overview,
+    ThemeData theme,
+    AppL10n l10n,
+  ) {
     final rate = overview.completionRate;
 
     return Container(
@@ -332,9 +373,7 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
               minHeight: 12,
               backgroundColor: Colors.white.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(
-                rate >= 1.0
-                    ? AppTheme.completedColor
-                    : Colors.white,
+                rate >= 1.0 ? AppTheme.completedColor : Colors.white,
               ),
             ),
           ),
@@ -354,7 +393,11 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildSectionHeader({required IconData icon, required String title, required Color color}) {
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String title,
+    required Color color,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
       child: Row(
@@ -410,8 +453,13 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -420,43 +468,81 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (isHealth ? AppTheme.healthColor : AppTheme.scheduleColor).withValues(alpha: 0.15),
+                    color:
+                        (isHealth
+                                ? AppTheme.healthColor
+                                : AppTheme.scheduleColor)
+                            .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(_detailIcon(icon), color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor, size: 28),
+                  child: Icon(
+                    _detailIcon(icon),
+                    color: isHealth
+                        ? AppTheme.healthColor
+                        : AppTheme.scheduleColor,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       if (category != null && category != 'custom')
                         Text(
                           category == 'preset' ? l10n.presetLabel : category,
-                          style: TextStyle(color: isHealth ? AppTheme.healthColor : AppTheme.scheduleColor, fontSize: 13, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            color: isHealth
+                                ? AppTheme.healthColor
+                                : AppTheme.scheduleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                     ],
                   ),
                 ),
                 Container(
-                  width: 32, height: 32,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isCompleted ? AppTheme.completedColor : Colors.transparent,
-                    border: isCompleted ? null : Border.all(color: Colors.grey[400]!, width: 2),
+                    color: isCompleted
+                        ? AppTheme.completedColor
+                        : Colors.transparent,
+                    border: isCompleted
+                        ? null
+                        : Border.all(color: Colors.grey[400]!, width: 2),
                   ),
-                  child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 22) : null,
+                  child: isCompleted
+                      ? const Icon(Icons.check, color: Colors.white, size: 22)
+                      : null,
                 ),
               ],
             ),
             const SizedBox(height: 20),
             if (description != null && description.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.info_outline, l10n.descriptionLabel, description),
+              _buildDetailRow(
+                context,
+                Icons.info_outline,
+                l10n.descriptionLabel,
+                description,
+              ),
               const SizedBox(height: 12),
             ],
             if (defaultValue != null && defaultValue.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.trending_up, l10n.suggestedValueLabel, defaultValue),
+              _buildDetailRow(
+                context,
+                Icons.trending_up,
+                l10n.suggestedValueLabel,
+                defaultValue,
+              ),
               const SizedBox(height: 12),
             ],
             if (notes != null && notes.isNotEmpty) ...[
@@ -464,11 +550,21 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
               const SizedBox(height: 12),
             ],
             if (scheduleDate != null && scheduleDate.isNotEmpty) ...[
-              _buildDetailRow(context, Icons.calendar_today, l10n.scheduleDateLabel, formatDate(scheduleDate)),
+              _buildDetailRow(
+                context,
+                Icons.calendar_today,
+                l10n.scheduleDateLabel,
+                formatDate(scheduleDate),
+              ),
               const SizedBox(height: 12),
             ],
             if (reminderTime != null) ...[
-              _buildDetailRow(context, Icons.notifications_active, l10n.reminderTimeLabel, '每天 $reminderTime'),
+              _buildDetailRow(
+                context,
+                Icons.notifications_active,
+                l10n.reminderTimeLabel,
+                '每天 $reminderTime',
+              ),
               const SizedBox(height: 12),
             ],
             _buildDetailRow(
@@ -484,7 +580,12 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -509,22 +610,38 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
 
   IconData _detailIcon(String iconName) {
     switch (iconName) {
-      case 'water_drop': return Icons.water_drop;
-      case 'directions_run': return Icons.directions_run;
-      case 'visibility': return Icons.visibility;
-      case 'self_improvement': return Icons.self_improvement;
-      case 'bedtime': return Icons.bedtime;
-      case 'eco': return Icons.eco;
-      case 'directions_walk': return Icons.directions_walk;
-      case 'menu_book': return Icons.menu_book;
-      case 'spellcheck': return Icons.spellcheck;
-      case 'edit_note': return Icons.edit_note;
-      case 'assignment': return Icons.assignment;
-      case 'replay': return Icons.replay;
-      case 'code': return Icons.code;
-      case 'biotech': return Icons.biotech;
-      case 'lightbulb': return Icons.lightbulb;
-      default: return Icons.favorite;
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'directions_run':
+        return Icons.directions_run;
+      case 'visibility':
+        return Icons.visibility;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'eco':
+        return Icons.eco;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      case 'menu_book':
+        return Icons.menu_book;
+      case 'spellcheck':
+        return Icons.spellcheck;
+      case 'edit_note':
+        return Icons.edit_note;
+      case 'assignment':
+        return Icons.assignment;
+      case 'replay':
+        return Icons.replay;
+      case 'code':
+        return Icons.code;
+      case 'biotech':
+        return Icons.biotech;
+      case 'lightbulb':
+        return Icons.lightbulb;
+      default:
+        return Icons.favorite;
     }
   }
 
@@ -536,9 +653,19 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
           children: [
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
-            Text(l10n.noTasks, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey[400])),
+            Text(
+              l10n.noTasks,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: Colors.grey[400],
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(l10n.addFromTabs, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[400])),
+            Text(
+              l10n.addFromTabs,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[400],
+              ),
+            ),
           ],
         ),
       ),
@@ -555,7 +682,10 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Center(
-                child: Text(l10n.noHistory, style: TextStyle(color: Colors.grey[400])),
+                child: Text(
+                  l10n.noHistory,
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
               ),
             ),
           );
@@ -570,7 +700,12 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.recentWeek, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  l10n.recentWeek,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 ...summaries.map((s) {
                   final date = s['date'] as String;
@@ -586,7 +721,9 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                           width: 80,
                           child: Text(
                             formatDate(date),
-                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ),
                         Expanded(
@@ -597,7 +734,9 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                               minHeight: 8,
                               backgroundColor: Colors.grey[200],
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                rate >= 1.0 ? AppTheme.completedColor : AppTheme.primaryColor,
+                                rate >= 1.0
+                                    ? AppTheme.completedColor
+                                    : AppTheme.primaryColor,
                               ),
                             ),
                           ),
@@ -605,7 +744,9 @@ class _OverviewPageState extends State<OverviewPage> with TickerProviderStateMix
                         const SizedBox(width: 8),
                         Text(
                           '${(rate * 100).toInt()}%',
-                          style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),

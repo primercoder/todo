@@ -96,10 +96,17 @@ class HealthProvider extends ChangeNotifier {
         final minute = int.tryParse(parts[1]) ?? 0;
         final isZh = await _isZh;
         final title = isZh ? '💪 健康提醒' : '💪 Health Reminder';
-        final body = _buildHealthReminderBody(item.name, item.defaultValue, isZh);
+        final body = _buildHealthReminderBody(
+          item.name,
+          item.defaultValue,
+          isZh,
+        );
         await _notificationService.scheduleTaskReminder(
-          id: item.id! + 10000, title: title, body: body,
-          hour: hour, minute: minute,
+          id: item.id! + 10000,
+          title: title,
+          body: body,
+          hour: hour,
+          minute: minute,
         );
       }
     } else if (item.id != null) {

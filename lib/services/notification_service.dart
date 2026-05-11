@@ -12,7 +12,8 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._();
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   final DatabaseHelper _db = DatabaseHelper();
 
   bool _initialized = false;
@@ -47,7 +48,11 @@ class NotificationService {
     await prefs.setStringList('recorded_notifications', recorded);
   }
 
-  Future<void> _saveNotificationRecord(String title, String body, {required String channel}) async {
+  Future<void> _saveNotificationRecord(
+    String title,
+    String body, {
+    required String channel,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('notification_history') ?? '[]';
     List list;
@@ -67,13 +72,17 @@ class NotificationService {
     await _incrementUnread();
   }
 
-  Future<void> _storeNotificationDetail(int id, String title, String body, String channel) async {
+  Future<void> _storeNotificationDetail(
+    int id,
+    String title,
+    String body,
+    String channel,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('notification_detail_$id', json.encode({
-      'title': title,
-      'body': body,
-      'channel': channel,
-    }));
+    await prefs.setString(
+      'notification_detail_$id',
+      json.encode({'title': title, 'body': body, 'channel': channel}),
+    );
   }
 
   Future<int> getUnreadCount() async {
@@ -94,7 +103,14 @@ class NotificationService {
 
   // ---- Scheduled notifications metadata ----
 
-  Future<void> _saveScheduledNotification(int id, String title, String body, String channel, int hour, int minute) async {
+  Future<void> _saveScheduledNotification(
+    int id,
+    String title,
+    String body,
+    String channel,
+    int hour,
+    int minute,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('scheduled_notifications_meta') ?? '{}';
     final map = json.decode(raw) as Map<String, dynamic>;
@@ -120,7 +136,9 @@ class NotificationService {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('scheduled_notifications_meta') ?? '{}';
     final map = json.decode(raw) as Map<String, dynamic>;
-    return map.map((key, value) => MapEntry(int.parse(key), value as Map<String, dynamic>));
+    return map.map(
+      (key, value) => MapEntry(int.parse(key), value as Map<String, dynamic>),
+    );
   }
 
   /// Called periodically (every 30s) while app is alive.
@@ -158,8 +176,15 @@ class NotificationService {
       final hour = data['hour'] as int;
       final minute = data['minute'] as int;
 
-      final scheduledTime = DateTime(now.year, now.month, now.day, hour, minute);
-      if (scheduledTime.isBefore(now) && !await _hasRecordedNotificationToday(id)) {
+      final scheduledTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
+      if (scheduledTime.isBefore(now) &&
+          !await _hasRecordedNotificationToday(id)) {
         final title = data['title'] as String? ?? '';
         final body = data['body'] as String? ?? '';
         final channel = data['channel'] as String? ?? 'task_reminders';
@@ -189,12 +214,15 @@ class NotificationService {
 
   Future<void> ensureChannels() async {
     if (_channelsCreated) return;
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android != null) {
       await android.createNotificationChannel(
         const AndroidNotificationChannel(
-          'task_reminders', '任务提醒',
+          'task_reminders',
+          '任务提醒',
           description: '健康计划和日程安排提醒',
           importance: Importance.max,
           enableVibration: true,
@@ -203,7 +231,8 @@ class NotificationService {
       );
       await android.createNotificationChannel(
         const AndroidNotificationChannel(
-          'daily_summary', '每日总结',
+          'daily_summary',
+          '每日总结',
           description: '每天定时发送完成情况总结',
           importance: Importance.max,
           enableVibration: true,
@@ -212,14 +241,17 @@ class NotificationService {
       );
       await android.createNotificationChannel(
         const AndroidNotificationChannel(
-          'midnight_refresh', '每日刷新',
+          'midnight_refresh',
+          '每日刷新',
           description: '每日零点刷新通知',
           importance: Importance.defaultImportance,
         ),
       );
     }
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -233,42 +265,172 @@ class NotificationService {
     await _plugin.initialize(
       settings: settings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationResponse,
     );
+
+    // If app was launched from a notification, record the pending payload
+    try {
+      final details = await _plugin.getNotificationAppLaunchDetails();
+      if (details != null) {
+        String? payload;
+        try {
+          payload =
+              (details as dynamic).notificationResponse?.payload as String?;
+        } catch (_) {
+          try {
+            payload = (details as dynamic).payload as String?;
+          } catch (_) {}
+        }
+        if (payload != null && payload.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'pending_notification',
+            json.encode({
+              'id': (details as dynamic).notificationResponse?.id ?? 0,
+              'payload': payload,
+            }),
+          );
+        }
+      }
+    } catch (_) {}
 
     _channelsCreated = true;
   }
 
   void _onNotificationResponse(NotificationResponse response) {
     _pendingCallbackResponse = response;
+
+    // Ensure tapped notification is recorded in history if detail exists.
+    () async {
+      try {
+        final id = response.id ?? 0;
+        final prefs = await SharedPreferences.getInstance();
+        final detailRaw = prefs.getString('notification_detail_$id');
+        if (detailRaw != null && detailRaw.isNotEmpty) {
+          try {
+            final detail = json.decode(detailRaw) as Map<String, dynamic>;
+            final title = detail['title'] as String? ?? '';
+            final body = detail['body'] as String? ?? '';
+            final channel = detail['channel'] as String? ?? 'task_reminders';
+            if (!await _hasRecordedNotificationToday(id)) {
+              await _saveNotificationRecord(title, body, channel: channel);
+              await _markNotificationRecordedToday(id);
+            }
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       processPendingNotification();
     });
   }
 
   @pragma('vm:entry-point')
-  static void _onBackgroundNotificationResponse(NotificationResponse response) {}
+  static void _onBackgroundNotificationResponse(NotificationResponse response) {
+    // Background callback: persist pending payload so main isolate can process it on startup.
+    try {
+      final payload = response.payload;
+      final id = response.id ?? 0;
+      SharedPreferences.getInstance().then((prefs) async {
+        try {
+          await prefs.setString(
+            'pending_notification',
+            json.encode({'id': id, 'payload': payload ?? ''}),
+          );
+        } catch (_) {}
+
+        try {
+          // If we have stored details for this id, also persist it into the
+          // notification history so the message center shows the notification
+          // even if the app is not yet resumed.
+          final detailRaw = prefs.getString('notification_detail_$id');
+          if (detailRaw != null && detailRaw.isNotEmpty) {
+            try {
+              final detail = json.decode(detailRaw) as Map<String, dynamic>;
+              final title = detail['title'] as String? ?? '';
+              final body = detail['body'] as String? ?? '';
+              final channel = detail['channel'] as String? ?? 'task_reminders';
+
+              final now = DateTime.now();
+              final todayStr =
+                  '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+              final recorded =
+                  prefs.getStringList('recorded_notifications') ?? [];
+              final key = '$id:$todayStr';
+              if (!recorded.contains(key)) {
+                final rawHistory =
+                    prefs.getString('notification_history') ?? '[]';
+                List list;
+                try {
+                  list = json.decode(rawHistory) as List;
+                } catch (_) {
+                  list = [];
+                }
+                list.insert(0, {
+                  'title': title,
+                  'body': body,
+                  'time': DateTime.now().toIso8601String(),
+                  'channel': channel,
+                });
+                if (list.length > 100) list = list.sublist(0, 100);
+                await prefs.setString(
+                  'notification_history',
+                  json.encode(list),
+                );
+
+                recorded.add(key);
+                if (recorded.length > 500)
+                  recorded.removeRange(0, recorded.length - 500);
+                await prefs.setStringList('recorded_notifications', recorded);
+
+                final count = (prefs.getInt('notification_unread') ?? 0) + 1;
+                await prefs.setInt('notification_unread', count);
+              }
+            } catch (_) {}
+          }
+        } catch (_) {}
+      });
+    } catch (_) {}
+  }
 
   Future<void> processPendingNotification() async {
-    final response = _pendingCallbackResponse;
+    NotificationResponse? response = _pendingCallbackResponse;
     _pendingCallbackResponse = null;
-    if (response == null) return;
 
-    final id = response.id ?? 0;
-    if (id == 0) return;
+    String? payload;
+
+    if (response != null) {
+      payload = response.payload;
+    } else {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final pend = prefs.getString('pending_notification');
+        if (pend != null && pend.isNotEmpty) {
+          try {
+            final map = json.decode(pend) as Map<String, dynamic>;
+            payload = map['payload'] as String?;
+          } catch (_) {}
+          await prefs.remove('pending_notification');
+        }
+      } catch (_) {}
+    }
+
+    if (payload == null || payload.isEmpty) {
+      return;
+    }
 
     await catchUpMissedNotifications();
-
-    final payload = response.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final nav = navigatorKey.currentState;
-      nav?.pushNamed(payload);
-    }
+    final nav = navigatorKey.currentState;
+    nav?.pushNamed(payload);
   }
 
   Future<bool> requestPermissions() async {
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android != null) {
       await android.requestNotificationsPermission();
       try {
@@ -338,6 +500,11 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    // Cancel any existing schedule with same id to avoid duplicates
+    try {
+      await _plugin.cancel(id: id);
+    } catch (_) {}
+
     await _plugin.zonedSchedule(
       id: id,
       title: title,
@@ -349,7 +516,14 @@ class NotificationService {
       payload: '/messages',
     );
     await _storeNotificationDetail(id, title, body, 'task_reminders');
-    await _saveScheduledNotification(id, title, body, 'task_reminders', hour, minute);
+    await _saveScheduledNotification(
+      id,
+      title,
+      body,
+      'task_reminders',
+      hour,
+      minute,
+    );
   }
 
   Future<void> scheduleTaskReminder({
@@ -359,7 +533,13 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
-    await _scheduleTaskAlarm(id: id, title: title, body: body, hour: hour, minute: minute);
+    await _scheduleTaskAlarm(
+      id: id,
+      title: title,
+      body: body,
+      hour: hour,
+      minute: minute,
+    );
   }
 
   Future<void> scheduleSummaryNotification(int hour, int minute) async {
@@ -396,7 +576,14 @@ class NotificationService {
       payload: '/messages',
     );
     await _storeNotificationDetail(summaryId, '今日总结', summary, 'daily_summary');
-    await _saveScheduledNotification(summaryId, '今日总结', summary, 'daily_summary', hour, minute);
+    await _saveScheduledNotification(
+      summaryId,
+      '今日总结',
+      summary,
+      'daily_summary',
+      hour,
+      minute,
+    );
   }
 
   Future<String> _calculateTodaysSummary() async {
@@ -424,7 +611,9 @@ class NotificationService {
 
     final buffer = StringBuffer();
     buffer.writeln(encouragement);
-    buffer.writeln(isZh ? '完成情况: $completed/$total' : 'Completion: $completed/$total');
+    buffer.writeln(
+      isZh ? '完成情况: $completed/$total' : 'Completion: $completed/$total',
+    );
 
     if (completed < total && total > 0) {
       buffer.writeln(isZh ? '未完成项:' : 'Incomplete:');
@@ -565,7 +754,14 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
     await _storeNotificationDetail(refreshId, title, body, 'midnight_refresh');
-    await _saveScheduledNotification(refreshId, title, body, 'midnight_refresh', 0, 0);
+    await _saveScheduledNotification(
+      refreshId,
+      title,
+      body,
+      'midnight_refresh',
+      0,
+      0,
+    );
   }
 
   Future<void> cancelTaskReminder(int id) async {
@@ -575,6 +771,10 @@ class NotificationService {
 
   Future<void> cancelAllReminders() async {
     await _plugin.cancelAll();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('scheduled_notifications_meta', '{}');
+    } catch (_) {}
   }
 
   Future<void> cancelSummary() async {
@@ -612,7 +812,8 @@ class NotificationService {
     }
 
     final today = DateTime.now();
-    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final scheduleItems = await _db.getScheduleItemsForDate(dateStr);
     for (final s in scheduleItems) {
       if (s.reminderEnabled && s.id != null) {
